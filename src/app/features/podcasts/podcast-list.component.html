@@ -1,0 +1,277 @@
+<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center font-black text-white shadow-lg shadow-purple-500/20">
+        🎙️
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg text-white leading-none">Alldare Creator Content Publisher</h1>
+        <p class="text-xs text-slate-400 mt-1">My Podcast & Vodcast Channels</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Media Vault Global Button -->
+      <button (click)="openMediaVaultModal()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2">
+        <span>📁</span>
+        <span>Media Vault ({{ mediaAssets().length }})</span>
+      </button>
+
+      <button (click)="openCreateModal()" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/20 transition flex items-center gap-2">
+        <span>+</span>
+        <span>Create New Podcast</span>
+      </button>
+
+      <!-- Authenticated Profile Badge & Logout -->
+      <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
+        <img [src]="authService.currentUser()?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="24" height="24" class="avatar-badge bg-slate-700" alt="Avatar" />
+        <span class="text-xs font-bold text-purple-300">&#64;{{ authService.currentUser()?.username || 'creator' }}</span>
+        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
+          {{ authService.currentUser()?.provider || 'SSO' }}
+        </span>
+      </div>
+
+      <button (click)="logout()" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
+        Log Out
+      </button>
+    </div>
+  </header>
+
+  <!-- Dashboard Main Content -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
+    
+    <!-- Hero Banner -->
+    <div class="mb-10 p-8 rounded-3xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-800/40 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="relative z-10 max-w-2xl">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-3">
+          Open RSS 2.0 & Vodcast Engine
+        </span>
+        <h2 class="text-3xl font-black text-white tracking-tight">Your Creator Podcasts</h2>
+        <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+          Manage your podcast channels, upload audio/video to your <strong>Media Vault</strong>, and syndicate 4K episodes to Open RSS 2.0.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button (click)="openMediaVaultModal()" class="px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition flex items-center gap-2">
+          <span>📁</span>
+          <span>Open Media Vault</span>
+        </button>
+        <button (click)="openCreateModal()" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:opacity-95 text-white font-extrabold text-sm shadow-xl shadow-purple-500/25 transition">
+          🚀 Launch New Podcast Show
+        </button>
+      </div>
+    </div>
+
+    <!-- Podcast Shows Grid -->
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <span>Active Podcast Channels</span>
+          <span class="text-xs bg-slate-800 text-slate-300 px-3 py-0.5 rounded-full font-normal">{{ shows().length }}</span>
+        </h3>
+      </div>
+
+      <!-- Grid Cards -->
+      <div *ngIf="shows().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let s of shows()" class="bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
+          
+          <div>
+            <!-- Show Header & Cover Image -->
+            <div class="flex items-start gap-4 mb-4">
+              <img [src]="s.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80'" class="w-20 h-20 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0 group-hover:scale-105 transition" alt="Cover" />
+              <div>
+                <span class="text-[11px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md inline-block mb-1">
+                  /podcast/{{ s.slug }}
+                </span>
+                <h4 class="text-lg font-black text-white leading-snug group-hover:text-purple-300 transition">{{ s.title }}</h4>
+                <p class="text-xs text-slate-400 font-medium mt-1">{{ s.category }} • By {{ s.authorName }}</p>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-3">
+              {{ s.description }}
+            </p>
+
+            <!-- Syndication URLs Box -->
+            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2 text-[11px] font-mono text-slate-300 mb-6">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">RSS 2.0:</span>
+                <a [href]="getRssUrl(s.slug || '')" target="_blank" class="text-purple-400 hover:underline truncate ml-2">
+                  /podcast/{{ s.slug }}/rss.xml
+                </a>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Web Landing:</span>
+                <a [href]="getWebUrl(s.slug || '')" target="_blank" class="text-pink-400 hover:underline truncate ml-2">
+                  /podcast/{{ s.slug }}/index.html
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2 pt-4 border-t border-slate-800/80">
+            <button (click)="manageShow(s)" class="flex-1 py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
+              <span>⚙️</span>
+              <span>Manage & Episodes</span>
+            </button>
+            <button (click)="deletePodcastShow(s)" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 border border-slate-700 transition text-xs font-semibold">
+              🗑️
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Empty State Card when creator has 0 podcasts -->
+      <div *ngIf="shows().length === 0" class="bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl p-12 text-center max-w-xl mx-auto space-y-4">
+        <div class="text-5xl mb-2">🎙️</div>
+        <h4 class="text-xl font-bold text-white">No Podcast Channels Yet</h4>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+          You haven't created any podcast channels yet. First upload your audio/video assets to your <strong>Media Vault</strong>, then launch your first podcast show!
+        </p>
+        <div class="flex items-center justify-center gap-3 pt-2">
+          <button (click)="openMediaVaultModal()" class="px-5 py-3 rounded-2xl bg-slate-800 text-slate-200 font-bold text-xs border border-slate-700 hover:bg-slate-700 transition">
+            📁 Open Media Vault
+          </button>
+          <button (click)="openCreateModal()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs shadow-lg shadow-purple-500/20 hover:opacity-95 transition">
+            + Create Podcast Channel
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create New Podcast Modal -->
+  <div *ngIf="showCreateModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative">
+      <button (click)="closeCreateModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+
+      <h3 class="text-2xl font-extrabold text-white mb-1">Create New Podcast Show</h3>
+      <p class="text-xs text-slate-400 mb-6">Specify a title and unique URL slug for your podcast channel.</p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Podcast Show Title</label>
+          <input type="text" [(ngModel)]="newShow.title" (ngModelChange)="onTitleInput($event)" placeholder="e.g. Deep Tech Talk" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Unique URL Slug (a-z0-9-)</label>
+          <input type="text" [(ngModel)]="newShow.slug" placeholder="e.g. deep-tech-talk" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-400 focus:outline-none focus:border-purple-500" />
+          <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">https://podcasts.alldare.online/podcast/{{ newShow.slug || 'slug' }}/rss.xml</span></p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Description</label>
+          <textarea [(ngModel)]="newShow.description" rows="3" placeholder="Show summary and host details..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Category</label>
+            <select [(ngModel)]="newShow.category" class="w-full bg-slate-950 text-slate-100 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+              <option value="Technology">Technology</option>
+              <option value="Business">Business</option>
+              <option value="Education">Education</option>
+              <option value="Arts">Arts</option>
+              <option value="Society & Culture">Society & Culture</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Author Name</label>
+            <input type="text" [(ngModel)]="newShow.authorName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
+          </div>
+        </div>
+
+        <div class="pt-4 flex gap-3">
+          <button (click)="createPodcastShow()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white font-bold text-sm shadow-lg shadow-purple-500/20 hover:opacity-95 transition">
+            🚀 Create & Publish Show
+          </button>
+          <button (click)="closeCreateModal()" class="py-3 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-sm transition border border-slate-700">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Vault Modal -->
+  <div *ngIf="showMediaVaultModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+    <div class="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button (click)="closeMediaVaultModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+
+      <div class="mb-6">
+        <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
+          <span>📁 Media Vault</span>
+          <span class="text-xs bg-purple-500/20 text-purple-300 px-3 py-0.5 rounded-full border border-purple-500/30">alldare-media</span>
+        </h3>
+        <p class="text-xs text-slate-400">Upload raw audio (.mp3, .wav) and video (.mp4) assets before publishing podcast episodes.</p>
+      </div>
+
+      <!-- Upload Section -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 mb-6 space-y-3 flex-shrink-0">
+        <h4 class="text-xs font-bold text-purple-300 uppercase tracking-wider">Upload New Audio/Video Asset</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Asset Title / Label</label>
+            <input type="text" [(ngModel)]="newMediaTitle" placeholder="e.g. Master Audio Episode 101" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Select File (.mp3, .flac, .mp4, .mov)</label>
+            <input type="file" (change)="onMediaFileSelected($event)" accept="audio/*,video/*" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-1.5 text-xs text-slate-300" />
+          </div>
+        </div>
+
+        <!-- Async Audio Track Extraction Toggle -->
+        <div class="p-3 bg-purple-950/40 border border-purple-800/40 rounded-xl flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🔊</span>
+            <div>
+              <h5 class="text-xs font-bold text-white">Extract & Copy Audio Track Asynchronously</h5>
+              <p class="text-[10px] text-slate-400">Tells <code class="font-mono text-purple-300">alldare-media</code> to asynchronously copy the audio stream from video files (.mp4) and generate a standalone .mp3 asset in your vault.</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+            <input type="checkbox" [ngModel]="extractAudio()" (ngModelChange)="extractAudio.set($event)" class="sr-only peer" />
+            <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+          </label>
+        </div>
+
+        <button (click)="uploadToMediaVault()" [disabled]="isUploading() || !selectedUploadFile()" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition disabled:opacity-50">
+          {{ isUploading() ? 'Processing Asset...' : '☁️ Upload Asset to Media Vault' }}
+        </button>
+      </div>
+
+      <!-- Stored Media Assets List -->
+      <div class="flex-1 overflow-y-auto space-y-3 pr-1">
+        <h4 class="text-xs font-bold text-slate-300 mb-2">Stored Media Assets ({{ mediaAssets().length }})</h4>
+        
+        <div *ngIf="mediaAssets().length === 0" class="text-center py-8 text-xs text-slate-500">
+          No media assets stored in your vault yet. Upload an audio or video file above.
+        </div>
+
+        <div *ngFor="let asset of mediaAssets()" class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="text-2xl">
+              {{ asset.mediaType.startsWith('video') ? '🎬' : '🎵' }}
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white">{{ asset.title || asset.originalName }}</h5>
+              <p class="text-[11px] font-mono text-purple-400 mt-0.5 select-all">{{ asset.cdnUrl }}</p>
+              <p class="text-[10px] text-slate-500 font-mono mt-1">
+                {{ asset.mediaType }} • {{ asset.durationSeconds / 60 | number:'1.0-0' }} mins • Status: {{ asset.status }}
+              </p>
+            </div>
+          </div>
+
+          <button (click)="deleteMediaAsset(asset)" class="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 text-xs font-semibold border border-slate-700 transition">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
