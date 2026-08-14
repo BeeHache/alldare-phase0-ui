@@ -23,3 +23,4 @@
 
 ## 3. Web UI & Responsive Layout Standards
 - **Mandatory Responsive Layout Design:** All user interfaces (`alldare-phase0-ui`) **must** be fully responsive across mobile, tablet, and desktop viewports (360px+ to ultra-wide displays) using fluid containers, responsive flex/grid layouts, and breakpoint utility classes without layout overflow or horizontal clipping.
+- **Prohibition of Hardcoded Literals:** Avoid inline hardcoded string literals, raw route paths, or magic numbers across UI components, ViewModels, backend services, or repositories. User-facing strings must be localized via `strings.xml` / `Localizable.strings`, and route keys must use centralized constants (e.g. `StreamKeys`, `SecurityConstants`, or `BuildKonfig`).
