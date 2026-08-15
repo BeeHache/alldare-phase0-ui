@@ -9,6 +9,17 @@ export interface CreatorUser {
   provider: 'github' | 'google' | 'local';
 }
 
+export interface UserSocialAccount {
+  id: string;
+  accountId: string;
+  platform: string;
+  externalAccountId: string;
+  externalUsername: string;
+  isConnected: boolean;
+  expiresAt?: string;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })

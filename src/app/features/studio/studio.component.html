@@ -21,7 +21,7 @@
 
     <div class="flex items-center gap-3">
       <!-- Authenticated Creator Profile Badge & Logout -->
-      <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
+      <div (click)="showProfileModal.set(true)" class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3 py-1.5 rounded-xl cursor-pointer transition">
         <img [src]="authService.currentUser()?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="24" height="24" class="avatar-badge bg-slate-700" alt="Avatar" />
         <span class="text-xs font-bold text-purple-300">&#64;{{ authService.currentUser()?.username || 'creator' }}</span>
         <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
@@ -42,6 +42,8 @@
       </button>
     </div>
   </header>
+
+  <app-profile-modal [isOpen]="showProfileModal()" (closeEvent)="showProfileModal.set(false)"></app-profile-modal>
 
   <!-- Navigation Tabs -->
   <div class="border-b border-slate-800 bg-slate-900/40 px-6 py-2 flex items-center gap-2 text-xs font-semibold overflow-x-auto">
@@ -79,20 +81,134 @@
       </div>
     </div>
 
+    <!-- Option 1 Managed Platform Syndication & Claim Status Matrix -->
+    <div class="mb-8 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🌐 Directory Syndication & Ownership Status</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              Option 1: Live via Alldare Managed Network
+            </span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Your show is automatically published live across Apple Podcasts, Spotify, Podcast Index, and Listen Notes under Alldare's Publisher Network.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Directory Card 1: Apple Podcasts -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🍏</span>
+              <h4 class="text-xs font-bold text-white">Apple Podcasts</h4>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <a href="https://podcasts.apple.com" target="_blank" class="text-[11px] text-purple-400 hover:underline">Listen on Apple ↗</a>
+            <button (click)="openClaimModal(syndications()[2] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition">
+              Claim Control 🔑
+            </button>
+          </div>
+        </div>
+
+        <!-- Directory Card 2: Spotify -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎧</span>
+              <h4 class="text-xs font-bold text-white">Spotify</h4>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <a href="https://open.spotify.com" target="_blank" class="text-[11px] text-purple-400 hover:underline">Listen on Spotify ↗</a>
+            <button (click)="openClaimModal(syndications()[1] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition">
+              Claim Control 🔑
+            </button>
+          </div>
+        </div>
+
+        <!-- Directory Card 3: Podcast Index & Search -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔍</span>
+              <h4 class="text-xs font-bold text-white">Podcast Index & 50+ Apps</h4>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AUTO-INDEXED</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Open RSS indexing across Overcast, Pocket Casts, Listen Notes.</p>
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <a href="https://podcastindex.org" target="_blank" class="text-[11px] text-purple-400 hover:underline">View Index ↗</a>
+            <span class="text-[10px] font-mono text-slate-500">0-Click Automated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Creator Ownership Claiming Modal -->
+    <div *ngIf="showClaimModal()" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🔑 Claim {{ selectedSyndicationForClaim()?.directoryName || 'Platform' }} Show Control</span>
+          </h3>
+          <button (click)="showClaimModal.set(false)" class="text-slate-400 hover:text-white text-sm">✕</button>
+        </div>
+
+        <p class="text-xs text-slate-300">Your show is already live on {{ selectedSyndicationForClaim()?.directoryName }} via Alldare's Managed Network. Follow these steps if you wish to transfer show dashboard control to your personal account:</p>
+
+        <div class="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs">
+          <div>
+            <span class="font-bold text-purple-400">Step 1: Your Unique Ownership Claim Token</span>
+            <div class="mt-1 flex items-center gap-2">
+              <input type="text" [value]="claimTokenInput()" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-1.5 font-mono text-purple-300" />
+            </div>
+          </div>
+
+          <div>
+            <span class="font-bold text-purple-400">Step 2: Open Directory Claim Portal</span>
+            <p class="text-slate-400 mt-0.5">Click to open {{ selectedSyndicationForClaim()?.directoryName }}'s creator claiming portal:</p>
+            <a [href]="selectedSyndicationForClaim()?.claimUrl || 'https://creators.spotify.com'" target="_blank" class="inline-block mt-1 text-purple-400 hover:underline font-bold">
+              Open {{ selectedSyndicationForClaim()?.directoryName }} Portal ↗
+            </a>
+          </div>
+
+          <div>
+            <span class="font-bold text-purple-400">Step 3: Confirm Ownership Transfer</span>
+            <p class="text-slate-400 mt-0.5">Once you submit your RSS feed URL in their portal, click below to update your status to personal ownership:</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button (click)="showClaimModal.set(false)" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+            Cancel
+          </button>
+          <button (click)="confirmTransferOwnership()" class="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-500/20">
+            Confirm Personal Ownership Transfer ✓
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB 1: PUBLISH EPISODE (Select from Media Vault) -->
     <div *ngIf="activeTab() === 'publish'" class="space-y-6">
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-xl">
         <h2 class="text-xl font-bold text-white mb-2">Publish Episode to {{ show().title }}</h2>
-        <p class="text-slate-400 text-xs mb-6">Select a pre-uploaded asset from your <strong>Media Vault</strong> (`alldare-media`) and configure episode metadata.</p>
+        <p class="text-slate-400 text-xs mb-6">Select a pre-uploaded asset from your <strong>Media Library</strong> and configure episode metadata.</p>
 
-        <!-- Media Vault Selection Section -->
+        <!-- Media Library Selection Section -->
         <div class="mb-6">
           <div class="flex items-center justify-between mb-3">
             <label class="block text-xs font-bold text-purple-300 uppercase tracking-wider">
-              1. Select Media Asset from Vault (alldare-media)
+              1. Select Media Asset from Library
             </label>
             <button (click)="activeTab.set('vault')" class="text-xs text-purple-400 hover:text-purple-300 underline font-semibold">
-              + Upload New Asset to Vault
+              + Upload New Asset to Library
             </button>
           </div>
 
@@ -151,10 +267,10 @@
       </div>
     </div>
 
-    <!-- TAB 2: MEDIA VAULT (Upload Raw Audio/Video) -->
+    <!-- TAB 2: MEDIA LIBRARY (Upload Raw Audio/Video) -->
     <div *ngIf="activeTab() === 'vault'" class="space-y-6">
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-xl">
-        <h2 class="text-xl font-bold text-white mb-2">📁 Media Vault (`alldare-media`)</h2>
+        <h2 class="text-xl font-bold text-white mb-2">Media Library</h2>
         <p class="text-slate-400 text-xs mb-6">Upload raw audio and video files to your media repository before attaching them to podcast episodes.</p>
 
         <!-- Upload Container -->
@@ -177,7 +293,7 @@
               <span class="text-xl">🔊</span>
               <div>
                 <h5 class="text-xs font-bold text-white">Extract & Copy Audio Track Asynchronously</h5>
-                <p class="text-[11px] text-slate-400">Tells <code class="font-mono text-purple-300">alldare-media</code> to asynchronously extract the audio stream from video files (.mp4, .mov) and store it in a standalone .mp3 asset in your Media Vault.</p>
+                <p class="text-[11px] text-slate-400">Automatically extracts the audio stream from video files (.mp4, .mov) and stores it as a standalone .mp3 asset in your Media Library.</p>
               </div>
             </div>
             <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -187,7 +303,7 @@
           </div>
 
           <button (click)="uploadToMediaVault()" [disabled]="isUploading() || !selectedUploadFile()" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition disabled:opacity-50">
-            {{ isUploading() ? 'Processing Asset in alldare-media...' : '☁️ Upload Asset to Media Vault' }}
+            {{ isUploading() ? 'Processing Asset...' : '☁️ Upload Asset to Media Library' }}
           </button>
         </div>
 

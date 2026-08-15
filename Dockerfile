@@ -19,10 +19,11 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built Angular SPA assets
-COPY --from=builder /app/dist/alldare-phase0-ui/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/alldare-phase0-ui /usr/share/nginx/html
 
-# Ensure index.html exists (handle index.csr.html fallback)
-RUN if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then \
+# Flatten browser subfolder if present and ensure index.html exists
+RUN if [ -d /usr/share/nginx/html/browser ]; then cp -rf /usr/share/nginx/html/browser/* /usr/share/nginx/html/; fi && \
+    if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then \
         cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; \
     fi
 

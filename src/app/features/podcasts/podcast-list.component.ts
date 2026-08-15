@@ -5,29 +5,54 @@ import { Router } from '@angular/router';
 import { PodcastService, PodcastShow } from '../../core/services/podcast.service';
 import { MediaService, MediaAsset } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PostService, SocialPost } from '../../core/services/post.service';
+import { ProfileModalComponent } from '../profile/profile-modal.component';
 
 @Component({
   selector: 'app-podcast-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProfileModalComponent],
   templateUrl: './podcast-list.component.html',
   styleUrls: ['./podcast-list.component.scss']
 })
 export class PodcastListComponent implements OnInit {
   private podcastService = inject(PodcastService);
   private mediaService = inject(MediaService);
+  private postService = inject(PostService);
   private router = inject(Router);
   public authService = inject(AuthService);
 
+  activeDashboardTab = signal<'social' | 'podcasts' | 'vault'>('podcasts');
   shows = signal<PodcastShow[]>([]);
+  posts = signal<SocialPost[]>([]);
   mediaAssets = signal<MediaAsset[]>([]);
   showCreateModal = signal<boolean>(false);
-  showMediaVaultModal = signal<boolean>(false);
+  showCreatePostModal = signal<boolean>(false);
+  showUploadAssetModal = signal<boolean>(false);
+  showProfileModal = signal<boolean>(false);
+
+  // Social Post Form Model
+  newPostText: string = '';
+  selectedPostMedia = signal<MediaAsset | null>(null);
+  crossPostTwitter = signal<boolean>(true);
+  crossPostYoutube = signal<boolean>(false);
+  crossPostInstagram = signal<boolean>(false);
+  crossPostFacebook = signal<boolean>(false);
+  crossPostThreads = signal<boolean>(false);
 
   // Upload model
   newMediaTitle: string = '';
   selectedUploadFile = signal<File | null>(null);
   isUploading = signal<boolean>(false);
+  extractAudio = signal<boolean>(false);
+
+  openUploadAssetModal(): void {
+    this.showUploadAssetModal.set(true);
+  }
+
+  closeUploadAssetModal(): void {
+    this.showUploadAssetModal.set(false);
+  }
 
   newShow: PodcastShow = {
     creatorId: '',
@@ -51,6 +76,7 @@ export class PodcastListComponent implements OnInit {
     this.newShow.authorName = username;
 
     this.loadShows(creatorId);
+    this.loadPosts(creatorId);
     this.loadMediaAssets(creatorId);
   }
 
@@ -60,10 +86,66 @@ export class PodcastListComponent implements OnInit {
     });
   }
 
+  loadPosts(creatorId: string): void {
+    this.postService.getPostsByCreatorId(creatorId).subscribe(list => {
+      this.posts.set(list);
+    });
+  }
+
   loadMediaAssets(creatorId: string): void {
     this.mediaService.getMediaAssets(creatorId).subscribe(assets => {
       this.mediaAssets.set(assets);
     });
+  }
+
+  createSocialPost(): void {
+    if (!this.selectedPostMedia()) {
+      alert('Phase 0 media publishing requires selecting an audio or video asset from your Media Library.');
+      return;
+    }
+
+    if (!this.newPostText.trim()) {
+      alert('Please enter a caption for your media post.');
+      return;
+    }
+
+    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
+    const username = this.authService.currentUser()?.username || 'creator';
+
+    const targets: string[] = [];
+    if (this.crossPostTwitter()) targets.push('Twitter/X');
+    if (this.crossPostYoutube()) targets.push('YouTube');
+    if (this.crossPostInstagram()) targets.push('Instagram');
+    if (this.crossPostFacebook()) targets.push('Facebook');
+    if (this.crossPostThreads()) targets.push('Meta Threads');
+
+    const mediaAsset = this.selectedPostMedia()!;
+
+    const postData: SocialPost = {
+      creatorId,
+      username,
+      content: this.newPostText,
+      mediaUrl: mediaAsset.cdnUrl,
+      mediaType: mediaAsset.mediaType,
+      audienceTier: 'PUBLIC',
+      crossPostTargets: targets
+    };
+
+    this.postService.createPost(postData).subscribe(created => {
+      this.posts.update(list => [created, ...list]);
+      this.newPostText = '';
+      this.selectedPostMedia.set(null);
+      this.showCreatePostModal.set(false);
+      alert(`🎬 Media Clip Published & Syndicated to ${targets.length > 0 ? targets.join(', ') : 'Social Networks'}!`);
+    });
+  }
+
+  deleteSocialPost(postId: string): void {
+    if (confirm('Delete this social post from your feed?')) {
+      this.postService.deletePost(postId).subscribe(() => {
+        this.posts.update(list => list.filter(p => p.id !== postId));
+      });
+    }
   }
 
   onTitleInput(title: string): void {
@@ -78,12 +160,12 @@ export class PodcastListComponent implements OnInit {
     this.showCreateModal.set(false);
   }
 
-  openMediaVaultModal(): void {
-    this.showMediaVaultModal.set(true);
+  openMediaLibraryModal(): void {
+    this.activeDashboardTab.set('vault');
   }
 
-  closeMediaVaultModal(): void {
-    this.showMediaVaultModal.set(false);
+  closeMediaLibraryModal(): void {
+    this.showUploadAssetModal.set(false);
   }
 
   onMediaFileSelected(event: Event): void {
@@ -97,9 +179,7 @@ export class PodcastListComponent implements OnInit {
     }
   }
 
-  extractAudio = signal<boolean>(false);
-
-  uploadToMediaVault(): void {
+  uploadToMediaLibrary(): void {
     const file = this.selectedUploadFile();
     if (!file) {
       alert('Please select an audio (.mp3, .flac, .wav) or video (.mp4, .mov) file to upload.');
@@ -116,7 +196,8 @@ export class PodcastListComponent implements OnInit {
         this.isUploading.set(false);
         this.selectedUploadFile.set(null);
         this.newMediaTitle = '';
-        alert(`📁 Asset "${uploaded.title}" uploaded to Media Vault!`);
+        this.closeUploadAssetModal();
+        alert(`📁 Asset "${uploaded.title}" uploaded to Media Library!`);
       },
       error: () => {
         const mockAsset: MediaAsset = {
@@ -151,7 +232,7 @@ export class PodcastListComponent implements OnInit {
               createdAt: new Date().toISOString()
             };
             this.mediaAssets.update(list => [extractedAudio, ...list]);
-            alert(`🔊 Asynchronous Audio Extraction Complete! New standalone audio asset "${extractedAudio.title}" added to Media Vault.`);
+            alert(`🔊 Asynchronous Audio Extraction Complete! New standalone audio asset "${extractedAudio.title}" added to Media Library.`);
           }, 1500);
         }
 
@@ -159,13 +240,14 @@ export class PodcastListComponent implements OnInit {
         this.isUploading.set(false);
         this.selectedUploadFile.set(null);
         this.newMediaTitle = '';
-        alert(`📁 Asset "${mockAsset.title}" uploaded to Media Vault!${shouldExtract ? ' Asynchronous audio extraction queued in alldare-media.' : ''}`);
+        this.closeUploadAssetModal();
+        alert(`📁 Asset "${mockAsset.title}" uploaded to Media Library!${shouldExtract ? ' Asynchronous audio extraction queued.' : ''}`);
       }
     });
   }
 
   deleteMediaAsset(asset: MediaAsset): void {
-    if (confirm(`Delete "${asset.title}" from your Media Vault?`)) {
+    if (confirm(`Delete "${asset.title}" from your Media Library?`)) {
       this.mediaService.deleteMediaAsset(asset.id).subscribe({
         next: () => this.mediaAssets.update(list => list.filter(a => a.id !== asset.id)),
         error: () => this.mediaAssets.update(list => list.filter(a => a.id !== asset.id))

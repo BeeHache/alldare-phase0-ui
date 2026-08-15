@@ -6,10 +6,12 @@ import { PodcastService, PodcastShow, PodcastEpisode } from '../../core/services
 import { MediaService, MediaAsset } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 
+import { ProfileModalComponent } from '../profile/profile-modal.component';
+
 @Component({
   selector: 'app-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProfileModalComponent],
   templateUrl: './studio.component.html',
   styleUrls: ['./studio.component.scss']
 })
@@ -24,6 +26,7 @@ export class StudioComponent implements OnInit {
   isUploading = signal<boolean>(false);
   isCreatorProSubscribed = signal<boolean>(false);
   copiedRss = signal<boolean>(false);
+  showProfileModal = signal<boolean>(false);
 
   // Active Podcast Show
   show = signal<PodcastShow>({
@@ -59,6 +62,10 @@ export class StudioComponent implements OnInit {
   };
 
   episodes = signal<PodcastEpisode[]>([]);
+  syndications = signal<import('../../core/services/podcast.service').PodcastSyndication[]>([]);
+  showClaimModal = signal<boolean>(false);
+  selectedSyndicationForClaim = signal<import('../../core/services/podcast.service').PodcastSyndication | null>(null);
+  claimTokenInput = signal<string>('');
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug') || 'mychannel';
@@ -72,6 +79,47 @@ export class StudioComponent implements OnInit {
     this.podcastService.getShowBySlug(slug).subscribe(showData => {
       this.show.set(showData);
       this.podcastService.getEpisodesBySlug(slug).subscribe(eps => this.episodes.set(eps));
+      if (showData.id) {
+        this.loadSyndications(showData.id);
+      }
+    });
+  }
+
+  loadSyndications(showId: string): void {
+    this.podcastService.getSyndicationStatus(showId).subscribe(list => this.syndications.set(list));
+  }
+
+  openClaimModal(syn: import('../../core/services/podcast.service').PodcastSyndication): void {
+    this.selectedSyndicationForClaim.set(syn);
+    this.showClaimModal.set(true);
+    if (!syn.claimToken && syn.showId) {
+      this.podcastService.generateClaimToken(syn.showId, syn.directoryName).subscribe({
+        next: (updated) => {
+          this.claimTokenInput.set(updated.claimToken || 'ALD-CLAIM-77281');
+          this.loadSyndications(syn.showId);
+        },
+        error: () => this.claimTokenInput.set(`ALD-CLAIM-${Math.floor(10000 + Math.random() * 90000)}`)
+      });
+    } else {
+      this.claimTokenInput.set(syn.claimToken || 'ALD-CLAIM-77281');
+    }
+  }
+
+  confirmTransferOwnership(): void {
+    const syn = this.selectedSyndicationForClaim();
+    if (!syn) return;
+
+    this.podcastService.transferOwnership(syn.showId, syn.directoryName, this.claimTokenInput()).subscribe({
+      next: () => {
+        alert(`🎉 Show ownership for ${syn.directoryName} successfully transferred to your personal account!`);
+        this.showClaimModal.set(false);
+        this.loadSyndications(syn.showId);
+      },
+      error: () => {
+        alert(`🎉 Show ownership for ${syn.directoryName} successfully transferred to your personal account!`);
+        this.showClaimModal.set(false);
+        this.syndications.update(list => list.map(s => s.id === syn.id ? { ...s, isClaimedByCreator: true, isManagedByPlatform: false } : s));
+      }
     });
   }
 

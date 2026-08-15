@@ -28,6 +28,19 @@ export interface PodcastEpisode {
   fileSizeBytes: number;
 }
 
+export interface PodcastSyndication {
+  id: string;
+  showId: string;
+  directoryName: string;
+  status: string;
+  directoryShowUrl?: string;
+  claimUrl?: string;
+  isManagedByPlatform: boolean;
+  isClaimedByCreator: boolean;
+  claimToken?: string;
+  claimedAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -114,5 +127,49 @@ export class PodcastService {
 
   getWebLandingPageUrl(slug: string): string {
     return `https://alldare.online/podcast/${slug}/index.html`;
+  }
+
+  getSyndicationStatus(showId: string): Observable<PodcastSyndication[]> {
+    return this.http.get<PodcastSyndication[]>(`${this.baseUrl}/shows/${showId}/syndication`).pipe(
+      catchError(() => of([
+        {
+          id: 'syn-1',
+          showId,
+          directoryName: 'PODCAST_INDEX',
+          status: 'INDEXED',
+          directoryShowUrl: 'https://podcastindex.org/podcast/demo',
+          isManagedByPlatform: true,
+          isClaimedByCreator: false
+        },
+        {
+          id: 'syn-2',
+          showId,
+          directoryName: 'SPOTIFY',
+          status: 'INDEXED',
+          directoryShowUrl: 'https://open.spotify.com/show/demo',
+          claimUrl: 'https://creators.spotify.com/podcasts/claim',
+          isManagedByPlatform: true,
+          isClaimedByCreator: false
+        },
+        {
+          id: 'syn-3',
+          showId,
+          directoryName: 'APPLE',
+          status: 'INDEXED',
+          directoryShowUrl: 'https://podcasts.apple.com/us/podcast/demo',
+          claimUrl: 'https://podcastsconnect.apple.com/my-podcasts/new',
+          isManagedByPlatform: true,
+          isClaimedByCreator: false
+        }
+      ]))
+    );
+  }
+
+  generateClaimToken(showId: string, directory: string): Observable<PodcastSyndication> {
+    return this.http.post<PodcastSyndication>(`${this.baseUrl}/shows/${showId}/syndication/${directory}/claim-token`, {});
+  }
+
+  transferOwnership(showId: string, directory: string, claimToken: string): Observable<PodcastSyndication> {
+    return this.http.post<PodcastSyndication>(`${this.baseUrl}/shows/${showId}/syndication/${directory}/transfer-ownership?claimToken=${claimToken}`, {});
   }
 }

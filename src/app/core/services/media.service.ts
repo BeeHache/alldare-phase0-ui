@@ -17,6 +17,19 @@ export interface MediaAsset {
   createdAt: string;
 }
 
+export interface MediaDistribution {
+  id: string;
+  mediaAssetId: string;
+  platform: string;
+  status: 'PENDING' | 'UPLOADING' | 'PROCESSING' | 'PUBLISHED' | 'FAILED';
+  caption?: string;
+  externalId?: string;
+  externalUrl?: string;
+  errorMessage?: string;
+  publishedAt?: string;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,5 +54,27 @@ export class MediaService {
 
   deleteMediaAsset(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/assets/${id}`);
+  }
+
+  createDistributions(mediaAssetId: string, caption: string, platforms: string[]): Observable<MediaDistribution[]> {
+    return this.http.post<MediaDistribution[]>(`${this.baseUrl}/distributions`, {
+      mediaAssetId,
+      caption,
+      platforms
+    }).pipe(
+      catchError(() => of<MediaDistribution[]>([]))
+    );
+  }
+
+  getDistributionsByAsset(mediaAssetId: string): Observable<MediaDistribution[]> {
+    return this.http.get<MediaDistribution[]>(`${this.baseUrl}/distributions/asset/${mediaAssetId}`).pipe(
+      catchError(() => of<MediaDistribution[]>([]))
+    );
+  }
+
+  getAllDistributions(): Observable<MediaDistribution[]> {
+    return this.http.get<MediaDistribution[]>(`${this.baseUrl}/distributions`).pipe(
+      catchError(() => of<MediaDistribution[]>([]))
+    );
   }
 }
