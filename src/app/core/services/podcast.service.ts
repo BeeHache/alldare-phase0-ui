@@ -28,7 +28,11 @@ export interface PodcastEpisode {
   mediaType: string;
   durationSeconds: number;
   fileSizeBytes: number;
+  episodeNumber?: number;
+  seasonNumber?: number;
+  publishedAt?: string;
 }
+
 
 export interface PodcastSyndication {
   id: string;

@@ -1,6 +1,6 @@
-<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-32">
   <!-- Top Navigation Header -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center font-black text-white shadow-lg shadow-purple-500/20">
         🎙️
@@ -23,10 +23,10 @@
   <!-- Show Hero Banner -->
   <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
     <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 backdrop-blur-sm flex flex-col md:flex-row gap-8 items-center md:items-start shadow-xl">
-      <img [src]="show()?.coverImageUrl" [alt]="show()?.title" class="w-48 h-48 rounded-xl object-cover shadow-2xl border border-slate-700 flex-shrink-0" />
+      <img [src]="show()?.coverImageUrl || 'assets/default_cover.png'" [alt]="show()?.title || 'Podcast Cover'" class="w-48 h-48 rounded-xl object-cover shadow-2xl border border-slate-700 flex-shrink-0" />
       <div class="flex-1 text-center md:text-left">
         <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-3">
-          {{ show()?.category }}
+          {{ show()?.category || 'Technology' }}
         </span>
         <h2 class="text-3xl font-extrabold text-white tracking-tight mb-2">{{ show()?.title }}</h2>
         <p class="text-slate-400 text-sm mb-4 leading-relaxed">{{ show()?.description }}</p>
@@ -39,11 +39,11 @@
 
         <!-- URL Endpoints Box -->
         <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2 text-xs font-mono text-slate-300">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-slate-500">RSS 2.0 Feed:</span>
             <span class="text-purple-400 select-all">{{ rssUrl }}</span>
           </div>
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-slate-500">Web Landing Page:</span>
             <span class="text-pink-400 select-all">{{ webPageUrl }}</span>
           </div>
@@ -51,32 +51,123 @@
       </div>
     </div>
 
-    <!-- Episodes Section -->
+    <!-- Episodes Section (Reverse Chronological Order) -->
     <section class="mt-10">
-      <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <span>Latest Episodes</span>
-        <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-normal">{{ episodes().length }}</span>
-      </h3>
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <span>Episodes</span>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-normal">{{ episodes().length }}</span>
+        </h3>
+        <span class="text-xs text-slate-400 font-mono">Sorted: Reverse Chronological (Newest First)</span>
+      </div>
 
       <div class="space-y-4">
-        <div *ngFor="let ep of episodes()" class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-6 hover:border-purple-500/40 transition">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-            <div>
-              <span class="text-xs font-medium text-purple-400 uppercase tracking-wider">{{ ep.mediaType }}</span>
-              <h4 class="text-lg font-bold text-white mt-1">{{ ep.title }}</h4>
-            </div>
-            <span class="text-xs text-slate-400 font-mono">{{ ep.durationSeconds / 60 | number:'1.0-0' }} mins</span>
-          </div>
-          <p class="text-slate-400 text-sm mb-4 leading-relaxed">{{ ep.description }}</p>
+        <div *ngFor="let ep of episodes()" 
+             class="bg-slate-900/40 border rounded-xl p-6 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+             [ngClass]="activeEpisode()?.id === ep.id ? 'border-purple-500/80 bg-purple-950/20 shadow-lg shadow-purple-500/10' : 'border-slate-800/60 hover:border-slate-700'">
           
-          <audio *ngIf="ep.mediaType.startsWith('audio')" controls class="w-full h-10 rounded-lg">
-            <source [src]="ep.mediaUrl" type="audio/mpeg">
-          </audio>
-          <video *ngIf="ep.mediaType.startsWith('video')" controls class="w-full max-h-96 rounded-xl border border-slate-800">
-            <source [src]="ep.mediaUrl" type="video/mp4">
-          </video>
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                {{ ep.mediaType }}
+              </span>
+              <span *ngIf="ep.seasonNumber" class="text-[11px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">S{{ ep.seasonNumber }}</span>
+              <span *ngIf="ep.episodeNumber" class="text-[11px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">E{{ ep.episodeNumber }}</span>
+              <span *ngIf="ep.publishedAt" class="text-xs text-slate-400 font-mono ml-auto">{{ ep.publishedAt | date:'mediumDate' }}</span>
+            </div>
+
+            <h4 class="text-lg font-bold text-white mb-2">{{ ep.title }}</h4>
+            <p class="text-slate-400 text-sm leading-relaxed mb-3 line-clamp-3">{{ ep.description }}</p>
+            
+            <div class="flex items-center gap-4 text-xs text-slate-400 font-mono">
+              <span>⏱️ {{ formatTime(ep.durationSeconds) }}</span>
+              <span>•</span>
+              <span>💾 {{ (ep.fileSizeBytes / (1024 * 1024)) | number:'1.1-1' }} MB</span>
+            </div>
+          </div>
+
+          <!-- Action Play Button -->
+          <div class="flex items-center gap-3 self-stretch md:self-auto justify-end flex-shrink-0">
+            <button (click)="playEpisode(ep)" 
+                    class="px-5 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-2 shadow-md"
+                    [ngClass]="activeEpisode()?.id === ep.id && isPlaying() ? 'bg-pink-600 hover:bg-pink-500 text-white' : 'bg-purple-600 hover:bg-purple-500 text-white'">
+              <span *ngIf="activeEpisode()?.id === ep.id && isPlaying()">⏸ Pause</span>
+              <span *ngIf="!(activeEpisode()?.id === ep.id && isPlaying())">▶ Play Episode</span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="episodes().length === 0" class="text-center py-12 bg-slate-900/30 border border-slate-800/40 rounded-xl">
+          <p class="text-slate-400 text-sm">No episodes published yet for this show.</p>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- Persistent Built-in Player Dock (Sticky Bottom Bar) -->
+  <div *ngIf="activeEpisode()" class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 border-t border-purple-500/30 backdrop-blur-xl shadow-2xl px-6 py-4 transition-all">
+    <div class="max-w-5xl mx-auto flex flex-col gap-3">
+      
+      <!-- Hidden Native HTML Media Elements -->
+      <audio #audioPlayer 
+             *ngIf="activeEpisode()?.mediaType?.startsWith('audio')" 
+             [src]="activeEpisode()?.mediaUrl" 
+             (timeupdate)="onTimeUpdate()" 
+             (loadedmetadata)="onLoadedMetadata()"
+             (ended)="onEnded()">
+      </audio>
+      
+      <div *ngIf="activeEpisode()?.mediaType?.startsWith('video')" class="w-full mb-2 flex justify-center">
+        <video #videoPlayer 
+               [src]="activeEpisode()?.mediaUrl" 
+               controls 
+               (timeupdate)="onTimeUpdate()" 
+               (loadedmetadata)="onLoadedMetadata()"
+               (ended)="onEnded()"
+               class="max-h-56 rounded-xl border border-slate-800 shadow-xl">
+        </video>
+      </div>
+
+      <!-- Player Control Controls Bar -->
+      <div class="flex items-center justify-between gap-4">
+        <!-- Episode Info -->
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <img [src]="show()?.coverImageUrl || 'assets/default_cover.png'" class="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+          <div class="min-w-0">
+            <h5 class="text-sm font-bold text-white truncate">{{ activeEpisode()?.title }}</h5>
+            <p class="text-xs text-purple-400 truncate">{{ show()?.title }}</p>
+          </div>
+        </div>
+
+        <!-- Play / Pause Controls -->
+        <div class="flex items-center gap-4">
+          <button (click)="togglePlay()" class="h-10 w-10 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center justify-center shadow-lg transition">
+            {{ isPlaying() ? '⏸' : '▶' }}
+          </button>
+        </div>
+
+        <!-- Time & Speed Controls -->
+        <div class="flex items-center gap-4 text-xs font-mono text-slate-300">
+          <span>{{ formatTime(currentTime()) }} / {{ formatTime(duration()) }}</span>
+          <div class="flex items-center gap-1 bg-slate-800 rounded-lg px-2 py-1">
+            <button (click)="setSpeed(1.0)" [class.text-purple-400]="playbackSpeed() === 1.0" class="hover:text-white px-1">1x</button>
+            <button (click)="setSpeed(1.25)" [class.text-purple-400]="playbackSpeed() === 1.25" class="hover:text-white px-1">1.25x</button>
+            <button (click)="setSpeed(1.5)" [class.text-purple-400]="playbackSpeed() === 1.5" class="hover:text-white px-1">1.5x</button>
+            <button (click)="setSpeed(2.0)" [class.text-purple-400]="playbackSpeed() === 2.0" class="hover:text-white px-1">2x</button>
+          </div>
+          <button (click)="closePlayer()" class="text-slate-400 hover:text-white text-base ml-2">✕</button>
+        </div>
+      </div>
+
+      <!-- Scrubbing Timeline Slider -->
+      <div class="flex items-center gap-2">
+        <input type="range" 
+               [min]="0" 
+               [max]="duration() || 100" 
+               [value]="currentTime()" 
+               (input)="seek($event)"
+               class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+      </div>
+    </div>
+  </div>
 </div>
