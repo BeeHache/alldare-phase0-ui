@@ -279,14 +279,7 @@ export class PodcastListComponent implements OnInit {
         if (err.status === 409) {
           alert(`❌ Slug "${this.newShow.slug}" is already taken. Please choose a unique URL slug.`);
         } else {
-          const mockCreated: PodcastShow = {
-            ...this.newShow,
-            id: `show-${Date.now()}`
-          };
-          this.shows.update(list => [...list, mockCreated]);
-          this.closeCreateModal();
-          this.resetForm();
-          alert(`🎉 Podcast "${mockCreated.title}" Created!`);
+          alert(`❌ Failed to create podcast. Backend error (${err.status || 'Network Error'}). Please try again.`);
         }
       }
     });
