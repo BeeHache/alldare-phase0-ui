@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+
 
 export interface PodcastShow {
   id?: string;
@@ -47,6 +49,7 @@ export interface PodcastSyndication {
 export class PodcastService {
   private http = inject(HttpClient);
   private baseUrl = '/api/v1/podcasts';
+  private podcastUrl = environment.podcastUrl;
 
   slugify(title: string): string {
     return (title || '')
@@ -118,15 +121,15 @@ export class PodcastService {
   }
 
   getRssFeedUrl(slug: string): string {
-    return `https://podcasts.alldare.online/podcast/${slug}/rss.xml`;
+    return `${this.podcastUrl}/podcast/${slug}/rss.xml`;
   }
 
   getAtomFeedUrl(slug: string): string {
-    return `https://podcasts.alldare.online/podcast/${slug}/atom.xml`;
+    return `${this.podcastUrl}/podcast/${slug}/atom.xml`;
   }
 
   getWebLandingPageUrl(slug: string): string {
-    return `https://alldare.online/podcast/${slug}/index.html`;
+    return `${this.podcastUrl}/podcast/${slug}/index.html`;
   }
 
   getSyndicationStatus(showId: string): Observable<PodcastSyndication[]> {

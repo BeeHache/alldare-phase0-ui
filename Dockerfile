@@ -39,6 +39,19 @@ RUN echo 'server { \
     error_page 404 =200 /index.html; \
 }' > /etc/nginx/conf.d/default.conf
 
+# Inject runtime environment variables into assets/env.js at container startup
+RUN echo '#!/bin/sh' > /docker-entrypoint.d/40-inject-env.sh && \
+    echo 'mkdir -p /usr/share/nginx/html/assets' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo 'cat <<EOF > /usr/share/nginx/html/assets/env.js' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo '(function(window) {' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo '  window.__env = window.__env || {};' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo '  window.__env.PODCAST_URL = "${PODCAST_URL:-https://podcasts.alldare.online}";' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo '})(this);' >> /docker-entrypoint.d/40-inject-env.sh && \
+    echo 'EOF' >> /docker-entrypoint.d/40-inject-env.sh && \
+    chmod +x /docker-entrypoint.d/40-inject-env.sh
+
 EXPOSE 4200
 
 CMD ["nginx", "-g", "daemon off;"]
+
+

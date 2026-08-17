@@ -289,8 +289,9 @@
           <div>
             <label class="form-label-prominent">Unique URL Slug (a-z0-9-)</label>
             <input type="text" [(ngModel)]="newShow.slug" placeholder="👉 Enter slug (e.g. deep-tech-talk)" class="form-input-prominent font-mono text-purple-300" />
-            <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">https://podcasts.alldare.online/podcast/{{ newShow.slug || 'slug' }}/rss.xml</span></p>
+            <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">{{ getRssUrl(newShow.slug || 'slug') }}</span></p>
           </div>
+
 
           <div>
             <label class="form-label-prominent">Show Description</label>
