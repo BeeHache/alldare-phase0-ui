@@ -186,6 +186,10 @@
               <span>⚙️</span>
               <span>Manage & Episodes</span>
             </button>
+            <button (click)="openEditModal(s)" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-purple-900/40 text-slate-300 hover:text-purple-300 border border-slate-700 transition text-xs font-semibold flex items-center gap-1">
+              <span>✏️</span>
+              <span>Edit</span>
+            </button>
             <button (click)="deletePodcastShow(s)" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 border border-slate-700 transition text-xs font-semibold">
               🗑️
             </button>
@@ -274,77 +278,243 @@
 
   <!-- Create New Podcast Modal -->
   <div *ngIf="showCreateModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative">
-      <button (click)="closeCreateModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
+      <button (click)="closeCreateModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
 
-      <h3 class="text-2xl font-extrabold text-white mb-1">Create New Podcast Show</h3>
-      <p class="text-xs text-slate-400 mb-6">Specify a title and unique URL slug for your podcast channel.</p>
+      <div class="flex-shrink-0 mb-4">
+        <h3 class="text-2xl font-extrabold text-white mb-1">Create New Podcast Show</h3>
+        <p class="text-xs text-slate-400">Specify a title and unique URL slug for your podcast channel.</p>
+      </div>
 
-        <div class="space-y-4">
+      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
+        <div>
+          <label class="form-label-prominent">Podcast Show Title</label>
+          <input type="text" [(ngModel)]="newShow.title" (ngModelChange)="onTitleInput($event)" placeholder="👉 Enter title (e.g. Deep Tech Talk)" class="form-input-prominent" />
+        </div>
+
+        <div>
+          <label class="form-label-prominent">Unique URL Slug (a-z0-9-)</label>
+          <input type="text" [(ngModel)]="newShow.slug" placeholder="👉 Enter slug (e.g. deep-tech-talk)" class="form-input-prominent font-mono text-purple-300" />
+          <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">{{ getRssUrl(newShow.slug || 'slug') }}</span></p>
+        </div>
+
+        <div>
+          <label class="form-label-prominent">Show Description</label>
+          <textarea [(ngModel)]="newShow.description" rows="3" placeholder="👉 Write a show summary and host details..." class="form-input-prominent resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="form-label-prominent">Podcast Show Title</label>
-            <input type="text" [(ngModel)]="newShow.title" (ngModelChange)="onTitleInput($event)" placeholder="👉 Enter title (e.g. Deep Tech Talk)" class="form-input-prominent" />
+            <label class="form-label-prominent">Category</label>
+            <select [(ngModel)]="newShow.category" class="form-input-prominent">
+              <option value="Technology">Technology</option>
+              <option value="Business">Business</option>
+              <option value="Education">Education</option>
+              <option value="Arts">Arts</option>
+              <option value="Society & Culture">Society & Culture</option>
+              <option value="News">News</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="Science">Science</option>
+            </select>
           </div>
-
           <div>
-            <label class="form-label-prominent">Unique URL Slug (a-z0-9-)</label>
-            <input type="text" [(ngModel)]="newShow.slug" placeholder="👉 Enter slug (e.g. deep-tech-talk)" class="form-input-prominent font-mono text-purple-300" />
-            <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">{{ getRssUrl(newShow.slug || 'slug') }}</span></p>
-          </div>
-
-
-          <div>
-            <label class="form-label-prominent">Show Description</label>
-            <textarea [(ngModel)]="newShow.description" rows="3" placeholder="👉 Write a show summary and host details..." class="form-input-prominent resize-none"></textarea>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="form-label-prominent">Category</label>
-              <select [(ngModel)]="newShow.category" class="form-input-prominent">
-                <option value="Technology">Technology</option>
-                <option value="Business">Business</option>
-                <option value="Education">Education</option>
-                <option value="Arts">Arts</option>
-                <option value="Society & Culture">Society & Culture</option>
-                <option value="News">News</option>
-                <option value="Comedy">Comedy</option>
-                <option value="Health & Fitness">Health & Fitness</option>
-                <option value="Science">Science</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label-prominent">Author Name</label>
-              <input type="text" [(ngModel)]="newShow.authorName" class="form-input-prominent" />
-            </div>
-          </div>
-
-          <div class="pt-4 flex items-center justify-end gap-3">
-            <button (click)="closeCreateModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-              Cancel
-            </button>
-            <button (click)="createPodcastShow()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2">
-              <span>🚀</span>
-              <span>Create & Publish Show</span>
-            </button>
+            <label class="form-label-prominent">Author Name</label>
+            <input type="text" [(ngModel)]="newShow.authorName" class="form-input-prominent" />
           </div>
         </div>
+
+        <div>
+          <label class="form-label-prominent">Cover Image URL</label>
+          <div class="flex items-center gap-2">
+            <input type="text" [(ngModel)]="newShow.coverImageUrl" placeholder="👉 Leave blank for default cover art, or enter URL / pick from media library" class="form-input-prominent flex-1" />
+            <button type="button" (click)="openMediaPicker('create')" class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+              <span>🖼️</span>
+              <span>Pick Media</span>
+            </button>
+          </div>
+          <!-- Live Preview with Hover Popover -->
+          <div class="mt-2.5 flex items-center gap-3 p-2 bg-slate-950/60 border border-slate-800 rounded-xl relative">
+            <div class="relative flex-shrink-0 cursor-pointer popover-thumb-wrapper">
+              <img [src]="newShow.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; max-height: 48px; object-fit: cover;" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105" alt="Preview" />
+              <!-- Hover Floating Popover Preview -->
+              <div class="absolute bottom-full left-0 mb-3 popover-preview z-50 transition-all duration-200 ease-out">
+                <div class="bg-slate-900 border-2 border-purple-500/60 p-2 rounded-2xl shadow-2xl backdrop-blur-xl">
+                  <img [src]="newShow.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 220px; height: 220px; min-width: 220px; max-width: 220px; max-height: 220px; object-fit: cover;" class="rounded-xl object-cover shadow-inner" alt="Enlarged Hover Preview" />
+                  <span class="block text-[10px] font-mono text-purple-300 text-center mt-1.5 font-bold">🔍 Live Cover Art Preview</span>
+                </div>
+              </div>
+            </div>
+            <div class="truncate text-[11px]">
+              <span class="text-slate-400 block font-medium">{{ newShow.coverImageUrl ? 'Custom Cover Image Selected (Hover thumbnail for full preview)' : 'Default Cover Art (Hover thumbnail for full preview)' }}</span>
+              <span class="text-purple-300 font-mono truncate block">{{ newShow.coverImageUrl || DEFAULT_COVER_IMAGE }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
+        <button (click)="closeCreateModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
+          Cancel
+        </button>
+        <button (click)="createPodcastShow()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2">
+          <span>🚀</span>
+          <span>Create & Publish Show</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Podcast Show Modal -->
+  <div *ngIf="showEditModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
+      <button (click)="closeEditModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
+
+      <div class="flex-shrink-0 mb-4">
+        <h3 class="text-2xl font-extrabold text-white mb-1">Edit Podcast Show</h3>
+        <p class="text-xs text-slate-400">Update podcast details. The URL slug is immutable to preserve feed subscribers.</p>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
+        <div>
+          <label class="form-label-prominent">Podcast Show Title</label>
+          <input type="text" [(ngModel)]="editShowModel.title" placeholder="👉 Enter title" class="form-input-prominent" />
+        </div>
+
+        <div>
+          <label class="form-label-prominent">URL Slug (Immutable)</label>
+          <input type="text" [value]="editShowModel.slug" disabled class="form-input-prominent font-mono text-slate-500 bg-slate-950/60 border-slate-800 cursor-not-allowed select-none" />
+          <p class="text-[11px] text-amber-400/80 mt-1 flex items-center gap-1">
+            <span>🔒</span>
+            <span>URL Slug cannot be changed after podcast creation.</span>
+          </p>
+        </div>
+
+        <div>
+          <label class="form-label-prominent">Show Description</label>
+          <textarea [(ngModel)]="editShowModel.description" rows="3" placeholder="👉 Write a show summary..." class="form-input-prominent resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label-prominent">Category</label>
+            <select [(ngModel)]="editShowModel.category" class="form-input-prominent">
+              <option value="Technology">Technology</option>
+              <option value="Business">Business</option>
+              <option value="Education">Education</option>
+              <option value="Arts">Arts</option>
+              <option value="Society & Culture">Society & Culture</option>
+              <option value="News">News</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="Science">Science</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label-prominent">Author Name</label>
+            <input type="text" [(ngModel)]="editShowModel.authorName" class="form-input-prominent" />
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label-prominent">Cover Image URL</label>
+          <div class="flex items-center gap-2">
+            <input type="text" [(ngModel)]="editShowModel.coverImageUrl" placeholder="👉 Leave blank for default cover art, or enter URL / pick from media library" class="form-input-prominent flex-1" />
+            <button type="button" (click)="openMediaPicker('edit')" class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+              <span>🖼️</span>
+              <span>Pick Media</span>
+            </button>
+          </div>
+          <!-- Live Preview with Hover Popover -->
+          <div class="mt-2.5 flex items-center gap-3 p-2 bg-slate-950/60 border border-slate-800 rounded-xl relative">
+            <div class="relative flex-shrink-0 cursor-pointer popover-thumb-wrapper">
+              <img [src]="editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; max-height: 48px; object-fit: cover;" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105" alt="Preview" />
+              <!-- Hover Floating Popover Preview -->
+              <div class="absolute bottom-full left-0 mb-3 popover-preview z-50 transition-all duration-200 ease-out">
+                <div class="bg-slate-900 border-2 border-purple-500/60 p-2 rounded-2xl shadow-2xl backdrop-blur-xl">
+                  <img [src]="editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 220px; height: 220px; min-width: 220px; max-width: 220px; max-height: 220px; object-fit: cover;" class="rounded-xl object-cover shadow-inner" alt="Enlarged Hover Preview" />
+                  <span class="block text-[10px] font-mono text-purple-300 text-center mt-1.5 font-bold">🔍 Live Cover Art Preview</span>
+                </div>
+              </div>
+            </div>
+            <div class="truncate text-[11px]">
+              <span class="text-slate-400 block font-medium">{{ editShowModel.coverImageUrl ? 'Custom Cover Image Selected (Hover thumbnail for full preview)' : 'Default Cover Art (Hover thumbnail for full preview)' }}</span>
+              <span class="text-purple-300 font-mono truncate block">{{ editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
+        <button (click)="closeEditModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
+          Cancel
+        </button>
+        <button (click)="updatePodcastShow()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2">
+          <span>💾</span>
+          <span>Save Changes</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Library Image Picker Modal -->
+  <div *ngIf="showMediaPickerModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+    <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button (click)="closeMediaPicker()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+
+      <div class="mb-5">
+        <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
+          <span>🖼️ Pick Cover Image from Media Library</span>
+        </h3>
+        <p class="text-xs text-slate-400">Select an asset from your creator media repository.</p>
+      </div>
+
+      <!-- Assets List / Grid -->
+      <div class="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+        <div *ngIf="mediaAssets().length === 0" class="text-center py-10 bg-slate-950/40 rounded-2xl border border-slate-800/80">
+          <p class="text-xs text-slate-400 mb-3">No media assets in your repository yet.</p>
+          <button (click)="closeMediaPicker(); openUploadAssetModal()" class="btn-gradient-primary text-xs font-bold px-4 py-2 rounded-xl">
+            ☁️ Upload New Image Asset
+          </button>
+        </div>
+
+        <div *ngIf="mediaAssets().length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div *ngFor="let asset of mediaAssets()" (click)="selectCoverImageFromAsset(asset)" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-purple-500/60 rounded-2xl transition cursor-pointer flex items-center gap-3 group">
+            <img [src]="asset.cdnUrl" (error)="$any($event.target).src='https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80'" class="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover:scale-105 transition flex-shrink-0" alt="Cover" />
+            <div class="truncate flex-1">
+              <h5 class="text-xs font-bold text-white truncate group-hover:text-purple-300 transition">{{ asset.title || asset.filename }}</h5>
+              <span class="text-[10px] font-mono text-purple-400/90 bg-purple-500/10 px-2 py-0.5 rounded mt-1 inline-block">{{ asset.mediaType }}</span>
+            </div>
+            <span class="text-xs font-bold text-purple-400 group-hover:translate-x-0.5 transition">Select ➔</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-5 border-t border-slate-800 flex items-center justify-between">
+        <button (click)="closeMediaPicker(); openUploadAssetModal()" class="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1">
+          <span>☁️</span>
+          <span>Upload New Asset to Library</span>
+        </button>
+        <button (click)="closeMediaPicker()" class="py-2 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Compact Upload Asset Modal (Used ONLY for entering new asset info) -->
   <div *ngIf="showUploadAssetModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative">
-      <button (click)="closeUploadAssetModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
+      <button (click)="closeUploadAssetModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
 
-      <div class="mb-6">
+      <div class="flex-shrink-0 mb-4">
         <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
           <span>☁️ Upload Asset to Media Library</span>
         </h3>
         <p class="text-xs text-slate-400">Select an audio or video file to store in your creator media repository.</p>
       </div>
 
-      <div class="space-y-4">
+      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
         <div>
           <label class="form-label-prominent">Asset Title / Label</label>
           <input type="text" [(ngModel)]="newMediaTitle" placeholder="👉 Enter title (e.g. Master Audio Episode 101)" class="form-input-prominent" />
@@ -373,31 +543,33 @@
             <span class="text-xs font-semibold text-purple-300">Enable</span>
           </label>
         </div>
+      </div>
 
-        <div class="pt-4 flex items-center justify-end gap-3">
-          <button (click)="closeUploadAssetModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-            Cancel
-          </button>
-          <button (click)="uploadToMediaLibrary()" [disabled]="isUploading() || !selectedUploadFile()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <span>☁️</span>
-            <span>{{ isUploading() ? 'Processing Asset...' : 'Upload Asset to Media Library' }}</span>
-          </button>
-        </div>
+      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
+        <button (click)="closeUploadAssetModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
+          Cancel
+        </button>
+        <button (click)="uploadToMediaLibrary()" [disabled]="isUploading() || !selectedUploadFile()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <span>☁️</span>
+          <span>{{ isUploading() ? 'Processing Asset...' : 'Upload Asset to Media Library' }}</span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Create Social Media Post Modal (Media Mandatory in Phase 0) -->
   <div *ngIf="showCreatePostModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative">
-      <button (click)="showCreatePostModal.set(false)" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
+      <button (click)="showCreatePostModal.set(false)" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
 
-      <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
-        <span>🎬 Publish Media Post</span>
-      </h3>
-      <p class="text-xs text-slate-400 mb-6">Select an audio or video asset from your Media Library to syndicate across social networks.</p>
+      <div class="flex-shrink-0 mb-4">
+        <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
+          <span>🎬 Publish Media Post</span>
+        </h3>
+        <p class="text-xs text-slate-400">Select an audio or video asset from your Media Library to syndicate across social networks.</p>
+      </div>
 
-      <div class="space-y-4">
+      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
         <!-- Mandatory Media Selector -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
@@ -449,16 +621,16 @@
             </label>
           </div>
         </div>
+      </div>
 
-        <div class="pt-4 flex items-center justify-end gap-3">
-          <button (click)="showCreatePostModal.set(false)" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-            Cancel
-          </button>
-          <button (click)="createSocialPost()" [disabled]="!selectedPostMedia() || !newPostText.trim()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <span>🎬</span>
-            <span>Publish Media Post</span>
-          </button>
-        </div>
+      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
+        <button (click)="showCreatePostModal.set(false)" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
+          Cancel
+        </button>
+        <button (click)="createSocialPost()" [disabled]="!selectedPostMedia() || !newPostText.trim()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <span>🎬</span>
+          <span>Publish Media Post</span>
+        </button>
       </div>
     </div>
   </div>

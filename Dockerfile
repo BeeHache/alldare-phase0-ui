@@ -1,25 +1,8 @@
-# --- Stage 1: Build the Angular Phase 0 Studio SPA ---
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy source and config files
-COPY . .
-
-# Build the Angular SPA
-RUN npm run build
-
-# --- Stage 2: Serve Web UI SPA with Nginx ---
+# --- Serve Web UI SPA with Nginx ---
 FROM nginx:alpine
 
-# Copy built Angular SPA assets
-COPY --from=builder /app/dist/alldare-phase0-ui /usr/share/nginx/html
+# Copy built Angular SPA assets from dist directory
+COPY dist/alldare-phase0-ui /usr/share/nginx/html
 
 # Flatten browser subfolder if present and ensure index.html exists
 RUN if [ -d /usr/share/nginx/html/browser ]; then cp -rf /usr/share/nginx/html/browser/* /usr/share/nginx/html/; fi && \

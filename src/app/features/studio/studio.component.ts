@@ -30,15 +30,15 @@ export class StudioComponent implements OnInit {
 
   // Active Podcast Show
   show = signal<PodcastShow>({
-    creatorId: '00000000-0000-0000-0000-000000000001',
-    username: 'mychannel',
-    slug: 'mychannel',
-    title: 'My Official Podcast & Vodcast',
-    description: 'Behind the scenes video & audio podcast feed.',
+    creatorId: '',
+    username: '',
+    slug: '',
+    title: '',
+    description: '',
     category: 'Technology',
-    authorName: 'Creator Name',
-    email: 'creator@alldare.online',
-    coverImageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80',
+    authorName: '',
+    email: '',
+    coverImageUrl: '',
     explicit: false
   });
 

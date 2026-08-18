@@ -148,6 +148,16 @@ option {
   box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
 }
 
+/* Hover Preview Tooltip Popover */
+.popover-preview {
+  display: none !important;
+  pointer-events: none;
+}
+
+.popover-thumb-wrapper:hover .popover-preview {
+  display: block !important;
+}
+
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;

@@ -23,7 +23,7 @@
   <!-- Show Hero Banner -->
   <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
     <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 backdrop-blur-sm flex flex-col md:flex-row gap-8 items-center md:items-start shadow-xl">
-      <img [src]="show()?.coverImageUrl || 'assets/default_cover.png'" [alt]="show()?.title || 'Podcast Cover'" class="w-48 h-48 rounded-xl object-cover shadow-2xl border border-slate-700 flex-shrink-0" />
+      <img [src]="show()?.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" [alt]="show()?.title || 'Podcast Cover'" style="width: 128px; height: 128px; min-width: 128px; max-width: 128px; max-height: 128px; object-fit: cover;" class="w-32 h-32 rounded-xl object-cover shadow-2xl border border-slate-700 flex-shrink-0" />
       <div class="flex-1 text-center md:text-left">
         <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-3">
           {{ show()?.category || 'Technology' }}
@@ -132,7 +132,7 @@
       <div class="flex items-center justify-between gap-4">
         <!-- Episode Info -->
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <img [src]="show()?.coverImageUrl || 'assets/default_cover.png'" class="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+          <img [src]="show()?.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; max-height: 48px; object-fit: cover;" class="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
           <div class="min-w-0">
             <h5 class="text-sm font-bold text-white truncate">{{ activeEpisode()?.title }}</h5>
             <p class="text-xs text-purple-400 truncate">{{ show()?.title }}</p>

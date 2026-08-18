@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 
@@ -70,50 +70,29 @@ export class PodcastService {
   }
 
   getShowBySlug(slug: string): Observable<PodcastShow> {
-    return this.http.get<PodcastShow>(`${this.baseUrl}/shows/${slug}`).pipe(
-      catchError(() => of({
-        id: 'show-12345',
-        creatorId: '00000000-0000-0000-0000-000000000001',
-        username: slug,
-        slug: slug,
-        title: `${slug.replace(/-/g, ' ').toUpperCase()} — Podcast Show`,
-        description: 'Official Phase 0 Podcast & Vodcast feed syndicated via Alldare Platform.',
-        category: 'Technology & Culture',
-        authorName: 'Alldare Creator',
-        email: 'creator@alldare.online',
-        coverImageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80',
-        explicit: false
-      }))
-    );
+    return this.http.get<PodcastShow>(`${this.baseUrl}/shows/${slug}`);
   }
 
   getEpisodesBySlug(slug: string): Observable<PodcastEpisode[]> {
-    return of([
-      {
-        id: 'ep-001',
-        showId: 'show-12345',
-        title: 'Episode 1: Launching the Phase 0 Creator Studio',
-        description: 'Deep dive into decentralized podcasting, RSS 2.0 syndication, and dynamic ad injection.',
-        mediaUrl: 'https://cdn.alldare.online/media/episodes/sample_ep1.mp3',
-        mediaType: 'audio/mpeg',
-        durationSeconds: 1840,
-        fileSizeBytes: 28400000
-      },
-      {
-        id: 'ep-002',
-        showId: 'show-12345',
-        title: 'Episode 2: Vodcasting & Slideshow Video Generation',
-        description: 'How to build automated video podcasts from image slide decks and audio tracks.',
-        mediaUrl: 'https://cdn.alldare.online/vodcasts/slideshow_demo.mp4',
-        mediaType: 'video/mp4',
-        durationSeconds: 1200,
-        fileSizeBytes: 42000000
-      }
-    ]);
+    return this.http.get<PodcastShow>(`${this.baseUrl}/shows/${slug}`).pipe(
+      switchMap(show => this.getEpisodesByShowId(show.id || '')),
+      catchError(() => of([]))
+    );
+  }
+
+  getEpisodesByShowId(showId: string): Observable<PodcastEpisode[]> {
+    if (!showId) return of([]);
+    return this.http.get<PodcastEpisode[]>(`${this.baseUrl}/shows/${showId}/episodes`).pipe(
+      catchError(() => of([]))
+    );
   }
 
   createShow(show: PodcastShow): Observable<PodcastShow> {
     return this.http.post<PodcastShow>(`${this.baseUrl}/shows`, show);
+  }
+
+  updateShow(id: string, show: Partial<PodcastShow>): Observable<PodcastShow> {
+    return this.http.put<PodcastShow>(`${this.baseUrl}/shows/${id}`, show);
   }
 
   deleteShow(id: string): Observable<void> {
@@ -137,38 +116,9 @@ export class PodcastService {
   }
 
   getSyndicationStatus(showId: string): Observable<PodcastSyndication[]> {
+    if (!showId) return of([]);
     return this.http.get<PodcastSyndication[]>(`${this.baseUrl}/shows/${showId}/syndication`).pipe(
-      catchError(() => of([
-        {
-          id: 'syn-1',
-          showId,
-          directoryName: 'PODCAST_INDEX',
-          status: 'INDEXED',
-          directoryShowUrl: 'https://podcastindex.org/podcast/demo',
-          isManagedByPlatform: true,
-          isClaimedByCreator: false
-        },
-        {
-          id: 'syn-2',
-          showId,
-          directoryName: 'SPOTIFY',
-          status: 'INDEXED',
-          directoryShowUrl: 'https://open.spotify.com/show/demo',
-          claimUrl: 'https://creators.spotify.com/podcasts/claim',
-          isManagedByPlatform: true,
-          isClaimedByCreator: false
-        },
-        {
-          id: 'syn-3',
-          showId,
-          directoryName: 'APPLE',
-          status: 'INDEXED',
-          directoryShowUrl: 'https://podcasts.apple.com/us/podcast/demo',
-          claimUrl: 'https://podcastsconnect.apple.com/my-podcasts/new',
-          isManagedByPlatform: true,
-          isClaimedByCreator: false
-        }
-      ]))
+      catchError(() => of([]))
     );
   }
 

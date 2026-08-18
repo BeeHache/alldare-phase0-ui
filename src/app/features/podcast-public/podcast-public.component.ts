@@ -13,6 +13,7 @@ import { PodcastService, PodcastShow, PodcastEpisode } from '../../core/services
 export class PodcastPublicComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private podcastService = inject(PodcastService);
+  readonly DEFAULT_COVER_IMAGE = '/assets/images/default-podcast-cover.jpg';
 
   @ViewChild('audioPlayer') audioPlayerRef?: ElementRef<HTMLAudioElement>;
   @ViewChild('videoPlayer') videoPlayerRef?: ElementRef<HTMLVideoElement>;

@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div *ngIf="isOpen" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col mx-auto overflow-hidden">
+      <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full max-h-[90vh] p-6 shadow-2xl relative flex flex-col mx-auto overflow-hidden">
         <button (click)="close()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-xl z-10 transition">✕</button>
 
         <!-- Fixed Header -->
@@ -26,7 +26,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <!-- Modal Body Content -->
-        <div class="space-y-4 pt-3 border-t border-slate-800 flex-1 min-h-0">
+        <div class="space-y-4 pt-3 border-t border-slate-800 flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
           <div>
             <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-1.5">Display / Author Name</label>
             <input type="text" [(ngModel)]="editableProfile.displayName" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-purple-500 transition" />

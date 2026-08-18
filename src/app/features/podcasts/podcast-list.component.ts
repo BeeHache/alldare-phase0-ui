@@ -27,9 +27,26 @@ export class PodcastListComponent implements OnInit {
   posts = signal<SocialPost[]>([]);
   mediaAssets = signal<MediaAsset[]>([]);
   showCreateModal = signal<boolean>(false);
+  showEditModal = signal<boolean>(false);
   showCreatePostModal = signal<boolean>(false);
   showUploadAssetModal = signal<boolean>(false);
   showProfileModal = signal<boolean>(false);
+  showMediaPickerModal = signal<boolean>(false);
+  mediaPickerTarget = signal<'create' | 'edit' | null>(null);
+
+  editingShow = signal<PodcastShow | null>(null);
+  editShowModel: PodcastShow = {
+    creatorId: '',
+    username: '',
+    slug: '',
+    title: '',
+    description: '',
+    category: 'Technology',
+    authorName: '',
+    email: 'creator@alldare.online',
+    coverImageUrl: '',
+    explicit: false
+  };
 
   // Social Post Form Model
   newPostText: string = '';
@@ -54,6 +71,8 @@ export class PodcastListComponent implements OnInit {
     this.showUploadAssetModal.set(false);
   }
 
+  readonly DEFAULT_COVER_IMAGE = '/assets/images/default-podcast-cover.jpg';
+
   newShow: PodcastShow = {
     creatorId: '',
     username: '',
@@ -63,7 +82,7 @@ export class PodcastListComponent implements OnInit {
     category: 'Technology',
     authorName: '',
     email: 'creator@alldare.online',
-    coverImageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80',
+    coverImageUrl: '',
     explicit: false
   };
 
@@ -255,6 +274,18 @@ export class PodcastListComponent implements OnInit {
     }
   }
 
+  isValidUrl(url: string): boolean {
+    if (!url || !url.trim()) return false;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('/assets/')) return true;
+    try {
+      const parsed = new URL(trimmed);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
   createPodcastShow(): void {
     if (!this.newShow.title.trim()) {
       alert('Please enter a podcast title.');
@@ -265,6 +296,13 @@ export class PodcastListComponent implements OnInit {
 
     if (!this.newShow.slug) {
       alert('A valid URL slug is required.');
+      return;
+    }
+
+    if (!this.newShow.coverImageUrl || !this.newShow.coverImageUrl.trim()) {
+      this.newShow.coverImageUrl = this.DEFAULT_COVER_IMAGE;
+    } else if (!this.isValidUrl(this.newShow.coverImageUrl)) {
+      alert('❌ Invalid Cover Image URL format. Please enter a valid URL (http:// or https://) or select from Media Library.');
       return;
     }
 
@@ -283,6 +321,71 @@ export class PodcastListComponent implements OnInit {
         }
       }
     });
+  }
+
+  openEditModal(show: PodcastShow): void {
+    this.editingShow.set(show);
+    const isDefaultImage = !show.coverImageUrl || 
+      show.coverImageUrl === this.DEFAULT_COVER_IMAGE || 
+      show.coverImageUrl.endsWith('default-podcast-cover.jpg');
+    this.editShowModel = {
+      ...show,
+      coverImageUrl: isDefaultImage ? '' : show.coverImageUrl
+    };
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.editingShow.set(null);
+  }
+
+  updatePodcastShow(): void {
+    const showToUpdate = this.editingShow();
+    if (!showToUpdate || !showToUpdate.id) return;
+
+    if (!this.editShowModel.title.trim()) {
+      alert('Please enter a podcast title.');
+      return;
+    }
+
+    if (!this.editShowModel.coverImageUrl || !this.editShowModel.coverImageUrl.trim()) {
+      this.editShowModel.coverImageUrl = this.DEFAULT_COVER_IMAGE;
+    } else if (!this.isValidUrl(this.editShowModel.coverImageUrl)) {
+      alert('❌ Invalid Cover Image URL format. Please enter a valid URL (http:// or https://) or select from Media Library.');
+      return;
+    }
+
+    this.podcastService.updateShow(showToUpdate.id, this.editShowModel).subscribe({
+      next: (updated) => {
+        this.shows.update(list => list.map(s => s.id === updated.id ? updated : s));
+        this.closeEditModal();
+        alert(`✏️ Podcast "${updated.title}" Updated Successfully!`);
+      },
+      error: (err) => {
+        alert(`❌ Failed to update podcast. Backend error (${err.status || 'Network Error'}).`);
+      }
+    });
+  }
+
+  openMediaPicker(target: 'create' | 'edit'): void {
+    this.mediaPickerTarget.set(target);
+    this.showMediaPickerModal.set(true);
+  }
+
+  closeMediaPicker(): void {
+    this.showMediaPickerModal.set(false);
+    this.mediaPickerTarget.set(null);
+  }
+
+  selectCoverImageFromAsset(asset: MediaAsset): void {
+    const target = this.mediaPickerTarget();
+    if (target === 'create') {
+      this.newShow.coverImageUrl = asset.cdnUrl;
+    } else if (target === 'edit') {
+      this.editShowModel.coverImageUrl = asset.cdnUrl;
+    }
+    this.closeMediaPicker();
   }
 
   deletePodcastShow(show: PodcastShow): void {
@@ -318,7 +421,7 @@ export class PodcastListComponent implements OnInit {
       category: 'Technology',
       authorName: username,
       email: 'creator@alldare.online',
-      coverImageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80',
+      coverImageUrl: '',
       explicit: false
     };
   }
