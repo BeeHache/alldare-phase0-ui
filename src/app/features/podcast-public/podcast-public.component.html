@@ -20,8 +20,22 @@
     </div>
   </header>
 
+  <!-- 404 Private / Not Found State -->
+  <main *ngIf="notFound()" class="flex-1 max-w-xl mx-auto w-full px-6 py-20 text-center flex flex-col items-center justify-center">
+    <div class="h-20 w-20 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center text-4xl mb-6 shadow-2xl">
+      🔒
+    </div>
+    <h2 class="text-3xl font-extrabold text-white mb-3">404 - Podcast Feed Not Available</h2>
+    <p class="text-slate-400 text-sm leading-relaxed mb-8">
+      This podcast feed is currently set to <strong>Private</strong> by the creator or does not exist. Public RSS syndication and web landing access are disabled.
+    </p>
+    <a href="/" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg transition">
+      Return to Creator Studio
+    </a>
+  </main>
+
   <!-- Show Hero Banner -->
-  <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
+  <main *ngIf="!notFound()" class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
     <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 backdrop-blur-sm flex flex-col md:flex-row gap-8 items-center md:items-start shadow-xl">
       <img [src]="show()?.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" [alt]="show()?.title || 'Podcast Cover'" style="width: 128px; height: 128px; min-width: 128px; max-width: 128px; max-height: 128px; object-fit: cover;" class="w-32 h-32 rounded-xl object-cover shadow-2xl border border-slate-700 flex-shrink-0" />
       <div class="flex-1 text-center md:text-left">

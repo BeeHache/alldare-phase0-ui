@@ -151,9 +151,17 @@
             <div class="flex items-start gap-4 mb-4">
               <img [src]="s.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80'" class="w-20 h-20 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0 group-hover:scale-105 transition" alt="Cover" />
               <div>
-                <span class="text-[11px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md inline-block mb-1">
-                  /podcast/{{ s.slug }}
-                </span>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[11px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md inline-block">
+                    /podcast/{{ s.slug }}
+                  </span>
+                  <button (click)="toggleVisibility(s, $event)" 
+                          title="Click to toggle Public / Private visibility"
+                          class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border transition shadow-sm"
+                          [ngClass]="s.isPublic !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'">
+                    <span>{{ s.isPublic !== false ? '🌐 Public' : '🔒 Private' }}</span>
+                  </button>
+                </div>
                 <h4 class="text-lg font-black text-white leading-snug group-hover:text-purple-300 transition">{{ s.title }}</h4>
                 <p class="text-xs text-slate-400 font-medium mt-1">{{ s.category }} • By {{ s.authorName }}</p>
               </div>

@@ -368,6 +368,28 @@ export class PodcastListComponent implements OnInit {
     });
   }
 
+  toggleVisibility(show: PodcastShow, event: Event): void {
+    event.stopPropagation();
+    if (!show.id) return;
+    const currentIsPublic = show.isPublic !== false && (show as any).public !== false;
+    const targetState = !currentIsPublic;
+
+    // Optimistic UI state update for immediate visual feedback
+    this.shows.update(list => list.map(s => s.id === show.id ? { ...s, isPublic: targetState, public: targetState } as any : s));
+
+    this.podcastService.toggleShowVisibility(show.id, targetState).subscribe({
+      next: (updated: any) => {
+        const isPub = updated.isPublic !== undefined ? updated.isPublic : (updated.public !== undefined ? updated.public : targetState);
+        this.shows.update(list => list.map(s => s.id === updated.id ? { ...updated, isPublic: isPub, public: isPub } : s));
+      },
+      error: (err) => {
+        // Revert optimistic state on failure
+        this.shows.update(list => list.map(s => s.id === show.id ? { ...s, isPublic: currentIsPublic, public: currentIsPublic } as any : s));
+        alert(`❌ Failed to update visibility status (${err.status || 'Network Error'}).`);
+      }
+    });
+  }
+
   openMediaPicker(target: 'create' | 'edit'): void {
     this.mediaPickerTarget.set(target);
     this.showMediaPickerModal.set(true);

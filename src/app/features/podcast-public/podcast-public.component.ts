@@ -22,6 +22,7 @@ export class PodcastPublicComponent implements OnInit {
   show = signal<PodcastShow | null>(null);
   episodes = signal<PodcastEpisode[]>([]);
   copiedRss = signal<boolean>(false);
+  notFound = signal<boolean>(false);
 
   // Player Signals
   activeEpisode = signal<PodcastEpisode | null>(null);
@@ -34,7 +35,17 @@ export class PodcastPublicComponent implements OnInit {
     const slugParam = this.route.snapshot.paramMap.get('slug') || 'mychannel';
     this.slug.set(slugParam);
 
-    this.podcastService.getShowBySlug(slugParam).subscribe(data => this.show.set(data));
+    this.podcastService.getShowBySlug(slugParam).subscribe({
+      next: data => {
+        this.show.set(data);
+        this.notFound.set(false);
+      },
+      error: () => {
+        this.show.set(null);
+        this.notFound.set(true);
+      }
+    });
+
     this.podcastService.getEpisodesBySlug(slugParam).subscribe(data => {
       // Reverse chronological order (Newest episode first)
       const sorted = (data || []).sort((a, b) => {

@@ -17,6 +17,8 @@ export interface PodcastShow {
   email: string;
   coverImageUrl: string;
   explicit: boolean;
+  isPublic?: boolean;
+  public?: boolean;
 }
 
 export interface PodcastEpisode {
@@ -93,6 +95,10 @@ export class PodcastService {
 
   updateShow(id: string, show: Partial<PodcastShow>): Observable<PodcastShow> {
     return this.http.put<PodcastShow>(`${this.baseUrl}/shows/${id}`, show);
+  }
+
+  toggleShowVisibility(id: string, isPublic: boolean): Observable<PodcastShow> {
+    return this.http.put<PodcastShow>(`${this.baseUrl}/shows/${id}/visibility?isPublic=${isPublic}`, {});
   }
 
   deleteShow(id: string): Observable<void> {
