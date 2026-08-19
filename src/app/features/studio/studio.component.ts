@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PodcastService, PodcastShow, PodcastEpisode } from '../../core/services/podcast.service';
 import { MediaService, MediaAsset } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
+import { DEFAULT_CREATOR_ID, DEFAULT_SLUG } from '../../core/constants/app.constants';
 
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 
@@ -69,8 +70,8 @@ export class StudioComponent implements OnInit {
   claimTokenInput = signal<string>('');
 
   ngOnInit(): void {
-    const slug = this.route.snapshot.paramMap.get('slug') || 'mychannel';
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
+    const slug = this.route.snapshot.paramMap.get('slug') || DEFAULT_SLUG;
+    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
 
     this.loadShowDetails(slug);
     this.loadMediaAssets(creatorId);

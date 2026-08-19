@@ -7,6 +7,7 @@ import { MediaService, MediaAsset } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PostService, SocialPost } from '../../core/services/post.service';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_COVER_IMAGE } from '../../core/constants/app.constants';
 
 @Component({
   selector: 'app-podcast-list',
@@ -43,7 +44,7 @@ export class PodcastListComponent implements OnInit {
     description: '',
     category: 'Technology',
     authorName: '',
-    email: 'creator@alldare.online',
+    email: DEFAULT_EMAIL,
     coverImageUrl: '',
     explicit: false
   };
@@ -71,7 +72,7 @@ export class PodcastListComponent implements OnInit {
     this.showUploadAssetModal.set(false);
   }
 
-  readonly DEFAULT_COVER_IMAGE = '/assets/images/default-podcast-cover.jpg';
+  readonly DEFAULT_COVER_IMAGE = DEFAULT_COVER_IMAGE;
 
   newShow: PodcastShow = {
     creatorId: '',
@@ -81,14 +82,14 @@ export class PodcastListComponent implements OnInit {
     description: '',
     category: 'Technology',
     authorName: '',
-    email: 'creator@alldare.online',
+    email: DEFAULT_EMAIL,
     coverImageUrl: '',
     explicit: false
   };
 
   ngOnInit(): void {
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
-    const username = this.authService.currentUser()?.username || 'creator';
+    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
+    const username = this.authService.currentUser()?.username || DEFAULT_USERNAME;
 
     this.newShow.creatorId = creatorId;
     this.newShow.username = username;

@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_AVATAR } from '../constants/app.constants';
 
 export interface CreatorUser {
   id: string;
@@ -40,18 +41,18 @@ export class AuthService {
   private checkUrlForToken(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-    const username = urlParams.get('username') || 'creator';
+    const username = urlParams.get('username') || DEFAULT_USERNAME;
     const email = urlParams.get('email') || `${username}@alldare.online`;
     const provider = (urlParams.get('provider') as 'github' | 'google') || 'github';
     const avatarFromParam = urlParams.get('avatarUrl');
 
     const avatarUrl = (avatarFromParam && avatarFromParam !== 'null' && avatarFromParam !== 'undefined')
       ? avatarFromParam
-      : (provider === 'github' ? `https://github.com/${username}.png` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`);
+      : (provider === 'github' ? `https://github.com/${username}.png` : DEFAULT_AVATAR);
 
     if (token) {
       this.setSession(token, {
-        id: urlParams.get('userId') || '00000000-0000-0000-0000-000000000001',
+        id: urlParams.get('userId') || DEFAULT_CREATOR_ID,
         username: username,
         email: email,
         authorName: username,

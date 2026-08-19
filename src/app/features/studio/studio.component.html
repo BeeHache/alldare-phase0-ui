@@ -1,82 +1,85 @@
 <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-  <!-- Top Navigation Header -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <button (click)="backToPodcasts()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 flex items-center gap-1.5">
-        <span>← Back to My Podcasts</span>
-      </button>
+  <!-- Top Navigation Header (Consistent with Podcast Channels page) -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 shadow-lg">
+    <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button (click)="backToPodcasts()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 flex items-center gap-1.5 shadow-sm">
+          <span>← Back to My Podcasts</span>
+        </button>
 
-      <div class="h-8 w-px bg-slate-800 mx-1"></div>
+        <div class="h-8 w-px bg-slate-800 mx-1"></div>
+
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 border border-purple-400/30 flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-base sm:text-lg text-white leading-none">{{ show().title }}</h1>
+            <p class="text-xs font-mono text-purple-400 mt-1">/podcast/{{ show().slug }}</p>
+          </div>
+        </div>
+      </div>
 
       <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 border border-purple-400/30 flex-shrink-0">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+        <!-- Syndication Quick Actions Group -->
+        <div class="hidden sm:flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 p-1 rounded-xl">
+          <a [href]="'/podcast/' + (show().slug || 'mychannel') + '/index.html'" target="_blank" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5">
+            <span>View Web Page ↗</span>
+          </a>
+          <button (click)="copyRssLink()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition">
+            {{ copiedRss() ? '✓ RSS Copied!' : 'Copy RSS Feed' }}
+          </button>
         </div>
-        <div>
-          <h1 class="font-extrabold text-lg text-white leading-none">{{ show().title }}</h1>
-          <p class="text-xs font-mono text-purple-400 mt-1">/podcast/{{ show().slug }}</p>
+
+        <div class="hidden sm:block h-6 w-px bg-slate-800"></div>
+
+        <!-- Authenticated Creator Profile Badge & Logout (Matches podcast-list header) -->
+        <div (click)="showProfileModal.set(true)" class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3.5 py-2 rounded-xl cursor-pointer transition shadow-sm">
+          <img [src]="authService.currentUser()?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="22" height="22" class="avatar-badge bg-slate-700 rounded-full" alt="Avatar" />
+          <span class="text-xs font-bold text-purple-300">&#64;{{ authService.currentUser()?.username || 'creator' }}</span>
         </div>
+
+        <button (click)="logout()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
+          Log Out
+        </button>
       </div>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <!-- Authenticated Creator Profile Badge & Logout -->
-      <div (click)="showProfileModal.set(true)" class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3 py-1.5 rounded-xl cursor-pointer transition">
-        <img [src]="authService.currentUser()?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="24" height="24" class="avatar-badge bg-slate-700" alt="Avatar" />
-        <span class="text-xs font-bold text-purple-300">&#64;{{ authService.currentUser()?.username || 'creator' }}</span>
-        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
-          {{ authService.currentUser()?.provider || 'SSO' }}
-        </span>
-      </div>
-
-      <button (click)="logout()" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
-        Log Out
-      </button>
-
-      <a [href]="'/podcast/' + (show().slug || 'mychannel') + '/index.html'" target="_blank" class="text-xs font-semibold px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 flex items-center gap-1.5">
-        <span>View Show Web Page ↗</span>
-      </a>
-
-      <button (click)="copyRssLink()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700">
-        {{ copiedRss() ? '✓ RSS Copied!' : 'Copy RSS Feed' }}
-      </button>
     </div>
   </header>
 
   <app-profile-modal [isOpen]="showProfileModal()" (closeEvent)="showProfileModal.set(false)"></app-profile-modal>
 
-  <!-- Navigation Tabs -->
-  <div class="border-b border-slate-800 bg-slate-900/40 px-6 py-2 flex items-center gap-2 text-xs font-semibold overflow-x-auto">
-    <button (click)="activeTab.set('publish')" [class]="activeTab() === 'publish' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-      <span>Publish Episode</span>
-    </button>
-    <button (click)="activeTab.set('vault')" [class]="activeTab() === 'vault' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-      <span>Media Vault</span>
-      <span class="px-1.5 py-0.2 bg-purple-500/20 text-purple-300 rounded-full text-[10px]">{{ mediaAssets().length }}</span>
-    </button>
-    <button (click)="activeTab.set('slideshow')" [class]="activeTab() === 'slideshow' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-      <span>Slideshow Vodcast Builder</span>
-    </button>
-    <button (click)="activeTab.set('show')" [class]="activeTab() === 'show' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-      <span>Show Settings</span>
-    </button>
-    <button (click)="activeTab.set('episodes')" [class]="activeTab() === 'episodes' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-      <span>Episode Catalog ({{ episodes().length }})</span>
-    </button>
-    <button (click)="activeTab.set('monetization')" [class]="activeTab() === 'monetization' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white bg-slate-800/40'" class="px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span>DAI & Creator Pro ($14.99/mo)</span>
-    </button>
+  <!-- Sub-Header Navigation Tabs (Centered inside max-w-5xl, matching podcast-list) -->
+  <div class="border-b border-slate-800 bg-slate-900/40 px-6 py-2.5 shadow-sm">
+    <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 text-xs font-semibold overflow-x-auto no-scrollbar">
+      <button (click)="activeTab.set('publish')" [class]="activeTab() === 'publish' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <span>Publish Episode</span>
+      </button>
+      <button (click)="activeTab.set('vault')" [class]="activeTab() === 'vault' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+        <span>Media Vault</span>
+        <span class="px-2 py-0.5 bg-slate-950/60 text-purple-300 rounded-full text-[10px] font-mono">{{ mediaAssets().length }}</span>
+      </button>
+      <button (click)="activeTab.set('slideshow')" [class]="activeTab() === 'slideshow' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+        <span>Slideshow Vodcast Builder</span>
+      </button>
+      <button (click)="activeTab.set('show')" [class]="activeTab() === 'show' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>Show Settings</span>
+      </button>
+      <button (click)="activeTab.set('episodes')" [class]="activeTab() === 'episodes' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <span>Episode Catalog ({{ episodes().length }})</span>
+      </button>
+      <button (click)="activeTab.set('monetization')" [class]="activeTab() === 'monetization' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
+        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>DAI & Creator Pro ($14.99/mo)</span>
+      </button>
+    </div>
   </div>
 
-  <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-
-
+  <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8">
     <!-- Creator Ownership Claiming Modal -->
     <div *ngIf="showClaimModal()" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
@@ -124,33 +127,36 @@
 
     <!-- TAB 1: PUBLISH EPISODE (Select from Media Vault) -->
     <div *ngIf="activeTab() === 'publish'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-xl">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-xl">
         <h2 class="text-xl font-bold text-white mb-2">Publish Episode to {{ show().title }}</h2>
         <p class="text-slate-400 text-xs mb-6">Select a pre-uploaded asset from your <strong>Media Library</strong> and configure episode metadata.</p>
 
         <!-- Media Library Selection Section -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-3">
-            <label class="block text-xs font-bold text-purple-300 uppercase tracking-wider">
-              1. Select Media Asset from Library
-            </label>
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="bg-purple-500/15 border border-purple-500/30 text-purple-300 px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold whitespace-nowrap flex-shrink-0 inline-block">STEP 1</span>
+              <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Select Media Asset from Library
+              </label>
+            </div>
             <button *ngIf="mediaAssets().length > 0" (click)="activeTab.set('vault')" class="text-xs text-purple-400 hover:text-purple-300 underline font-semibold">
               + Upload New Asset to Library
             </button>
           </div>
 
-          <!-- Empty Vault Warning -->
-          <div *ngIf="mediaAssets().length === 0" class="p-8 rounded-2xl bg-slate-950/80 border border-dashed border-slate-800 text-center space-y-4 max-w-lg mx-auto shadow-inner">
-            <div class="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20 flex-shrink-0">
+          <!-- Empty Vault Warning (Hero Card) -->
+          <div *ngIf="mediaAssets().length === 0" class="py-12 px-8 rounded-3xl bg-slate-900/60 border-2 border-dashed border-slate-800/90 text-center space-y-5 max-w-xl mx-auto shadow-2xl backdrop-blur-sm">
+            <div class="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 flex-shrink-0">
               <svg class="w-8 h-8 text-white flex-shrink-0" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
               </svg>
             </div>
-            <div class="space-y-1">
-              <h4 class="text-sm font-bold text-white">Your Media Vault is Empty</h4>
-              <p class="text-xs text-slate-400">Upload your raw podcast MP3 audio or MP4 video files to syndicate new episodes.</p>
+            <div class="space-y-1.5">
+              <h4 class="text-base font-bold text-white">Your Media Vault is Empty</h4>
+              <p class="text-xs text-slate-400 max-w-md mx-auto">Upload your raw podcast MP3 audio or MP4 video files to syndicate new episodes.</p>
             </div>
-            <button (click)="activeTab.set('vault')" class="btn-gradient-primary px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-purple-500/20 inline-flex items-center gap-2">
+            <button (click)="activeTab.set('vault')" class="btn-gradient-primary px-7 py-3 rounded-xl font-bold text-xs shadow-xl shadow-purple-500/30 inline-flex items-center gap-2 transition hover:scale-[1.02]">
               <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
               <span>Upload First Audio/Video Asset</span>
             </button>
@@ -184,17 +190,21 @@
         </div>
 
         <!-- Episode Metadata Inputs -->
-        <div class="space-y-4 pt-4 border-t border-slate-800">
-          <label class="block text-xs font-bold text-purple-300 uppercase tracking-wider">
-            2. Episode Metadata & Syndication Details
-          </label>
+        <div class="space-y-4 pt-6 border-t border-slate-800">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="bg-purple-500/15 border border-purple-500/30 text-purple-300 px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold whitespace-nowrap flex-shrink-0 inline-block">STEP 2</span>
+            <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+              Episode Metadata & Syndication Details
+            </label>
+          </div>
+
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Episode Title</label>
-            <input type="text" [(ngModel)]="newEpisode.title" placeholder="e.g. Episode 101 — Building Decentralized Infrastructure" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Episode Title</label>
+            <input type="text" [(ngModel)]="newEpisode.title" placeholder="e.g. Episode 101 — Building Decentralized Infrastructure" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Episode Description & Show Notes</label>
-            <textarea [(ngModel)]="newEpisode.description" rows="3" placeholder="Add timestamps, guest links, and chapter summaries..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"></textarea>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Episode Description & Show Notes</label>
+            <textarea [(ngModel)]="newEpisode.description" rows="3" placeholder="Add timestamps, guest links, and chapter summaries..." class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition resize-none"></textarea>
           </div>
 
           <div class="space-y-2 pt-2">
@@ -219,7 +229,7 @@
 
     <!-- TAB 2: MEDIA LIBRARY (Upload Raw Audio/Video) -->
     <div *ngIf="activeTab() === 'vault'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-xl">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-xl">
         <h2 class="text-xl font-bold text-white mb-2">Media Library</h2>
         <p class="text-slate-400 text-xs mb-6">Upload raw audio and video files to your media repository before attaching them to podcast episodes.</p>
 
@@ -228,32 +238,36 @@
           <h3 class="text-sm font-bold text-white">Upload New Asset</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Asset Title / Label</label>
-              <input type="text" [(ngModel)]="newMediaTitle" placeholder="e.g. Master Audio Episode 101" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white" />
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Asset Title / Label</label>
+              <input type="text" [(ngModel)]="newMediaTitle" placeholder="e.g. Master Audio Episode 101" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Select File (.mp3, .flac, .wav, .mp4, .mov)</label>
-              <input type="file" (change)="onMediaFileSelected($event)" accept="audio/*,video/*" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-1.5 text-xs text-slate-300" />
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Select File (.mp3, .flac, .wav, .mp4, .mov)</label>
+              <input type="file" (change)="onMediaFileSelected($event)" accept="audio/*,video/*" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2 text-xs text-slate-300 cursor-pointer focus:outline-none focus:border-purple-500 transition" />
             </div>
           </div>
 
           <!-- Async Audio Track Extraction Toggle -->
-          <div class="p-3.5 bg-purple-950/40 border border-purple-800/40 rounded-xl flex items-center justify-between gap-4">
+          <div class="p-4 bg-purple-950/40 border border-purple-800/40 rounded-xl flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <span class="text-xl">🔊</span>
+              <div class="h-8 w-8 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 flex-shrink-0">
+                <svg class="w-4 h-4 text-purple-300 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                </svg>
+              </div>
               <div>
-                <h5 class="text-xs font-bold text-white">Extract & Copy Audio Track Asynchronously</h5>
-                <p class="text-[11px] text-slate-400">Automatically extracts the audio stream from video files (.mp4, .mov) and stores it as a standalone .mp3 asset in your Media Library.</p>
+                <h5 class="text-xs font-bold text-white leading-tight">Extract & Copy Audio Track Asynchronously</h5>
+                <p class="text-[11px] text-slate-400 mt-0.5">Automatically extracts the audio stream from video files (.mp4, .mov) and stores it as a standalone .mp3 asset in your Media Library.</p>
               </div>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input type="checkbox" [ngModel]="extractAudio()" (ngModelChange)="extractAudio.set($event)" class="sr-only peer" />
-              <div class="w-11 h-6 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            <label class="flex items-center gap-2 cursor-pointer flex-shrink-0">
+              <input type="checkbox" [ngModel]="extractAudio()" (ngModelChange)="extractAudio.set($event)" class="accent-purple-600 w-4 h-4 rounded cursor-pointer" />
+              <span class="text-xs font-semibold text-purple-300">Enable</span>
             </label>
           </div>
 
-          <button (click)="uploadToMediaVault()" [disabled]="isUploading() || !selectedUploadFile()" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition disabled:opacity-50 inline-flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          <button (click)="uploadToMediaVault()" [disabled]="isUploading() || !selectedUploadFile()" class="btn-gradient-primary px-6 py-2.5 rounded-xl font-bold text-xs transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg class="w-4 h-4 text-white flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             <span>{{ isUploading() ? 'Processing Asset...' : 'Upload Asset to Media Library' }}</span>
           </button>
         </div>
@@ -261,11 +275,11 @@
         <!-- Vault Assets Grid -->
         <h3 class="text-sm font-bold text-white mb-3">Stored Media Assets ({{ mediaAssets().length }})</h3>
         <div class="space-y-3">
-          <div *ngFor="let asset of mediaAssets()" class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div *ngFor="let asset of mediaAssets()" class="bg-slate-950 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-4 transition">
             <div class="flex items-center gap-3">
               <div class="flex-shrink-0">
-                <svg *ngIf="asset.mediaType.startsWith('video')" class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                <svg *ngIf="!asset.mediaType.startsWith('video')" class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                <svg *ngIf="asset.mediaType.startsWith('video')" class="w-5 h-5 text-purple-400 flex-shrink-0" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <svg *ngIf="!asset.mediaType.startsWith('video')" class="w-5 h-5 text-purple-400 flex-shrink-0" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
               </div>
               <div>
                 <h4 class="text-sm font-bold text-white">{{ asset.title || asset.originalName }}</h4>
@@ -276,8 +290,8 @@
               </div>
             </div>
 
-            <button (click)="deleteMediaAsset(asset)" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-1">
-              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <button (click)="deleteMediaAsset(asset)" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
+              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               <span>Delete</span>
             </button>
           </div>
@@ -287,142 +301,158 @@
 
     <!-- TAB 3: SHOW SETTINGS -->
     <div *ngIf="activeTab() === 'show'" class="space-y-6">
-      <!-- Active Podcast RSS URL & Web Landing Page Banner -->
-      <div class="p-5 rounded-2xl bg-purple-950/30 border border-purple-800/40 grid grid-cols-1 md:grid-cols-2 gap-4 shadow-xl backdrop-blur-md">
-        <!-- RSS Feed Container -->
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-purple-500/20 hover:border-purple-500/40 transition flex items-center justify-between gap-3 group">
-          <div class="min-w-0 flex-1">
-            <span class="text-[10px] uppercase font-mono font-bold tracking-wider text-purple-400 block mb-0.5">RSS 2.0 SYNDICATION FEED</span>
-            <a [href]="rssFeedUrl" target="_blank" class="text-xs font-mono text-purple-200 hover:text-white truncate block hover:underline">
-              {{ rssFeedUrl }} ↗
-            </a>
+      <!-- 1. Metadata Settings Box (Primary Action Item) -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm space-y-6 shadow-xl">
+        <div>
+          <h2 class="text-xl font-bold text-white">Show Metadata & Details</h2>
+          <p class="text-slate-400 text-xs mt-1">Configure your show title, URL slug, show notes description, author identity, and contact email.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Show Title</label>
+            <input type="text" [(ngModel)]="show().title" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition" />
           </div>
-          <button (click)="copyRssLink()" class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 text-xs font-bold transition">
-            {{ copiedRss() ? '✓ Copied!' : 'Copy' }}
-          </button>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">URL Slug (e.g. mychannel)</label>
+            <input type="text" [(ngModel)]="show().slug" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Show Description</label>
+            <textarea [(ngModel)]="show().description" rows="3" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Author Name</label>
+            <input type="text" [(ngModel)]="show().authorName" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Contact Email</label>
+            <input type="email" [(ngModel)]="show().email" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition" />
+          </div>
         </div>
 
-        <!-- Web Landing Page Container -->
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-pink-500/20 hover:border-pink-500/40 transition flex items-center justify-between gap-3 group">
-          <div class="min-w-0 flex-1">
-            <span class="text-[10px] uppercase font-mono font-bold tracking-wider text-pink-400 block mb-0.5">WEB LANDING PAGE URL</span>
-            <a [href]="webLandingPageUrl" target="_blank" class="text-xs font-mono text-pink-200 hover:text-white truncate block hover:underline">
-              {{ webLandingPageUrl }} ↗
+        <button (click)="saveShow()" class="btn-gradient-primary px-7 py-3 rounded-xl font-bold text-xs shadow-lg shadow-purple-500/20 transition hover:scale-[1.01]">
+          Save Show Settings
+        </button>
+      </div>
+
+      <!-- 2. Active Podcast RSS URL & Web Landing Page Banner -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm space-y-4 shadow-xl">
+        <div>
+          <h3 class="text-base font-bold text-white">Syndication Feeds & Web Endpoints</h3>
+          <p class="text-xs text-slate-400 mt-1">Use these URLs to test your RSS feed or share your public channel landing page.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- RSS Feed Container -->
+          <div class="p-4 rounded-xl bg-slate-950 border border-purple-500/20 hover:border-purple-500/40 transition flex items-center justify-between gap-3 group min-w-0">
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] uppercase font-mono font-bold tracking-wider text-purple-400 block mb-0.5">RSS 2.0 SYNDICATION FEED</span>
+              <a [href]="rssFeedUrl" target="_blank" class="text-xs font-mono text-purple-200 hover:text-white truncate block hover:underline">
+                {{ rssFeedUrl }} ↗
+              </a>
+            </div>
+            <button (click)="copyRssLink()" class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 text-xs font-bold transition">
+              {{ copiedRss() ? '✓ Copied!' : 'Copy' }}
+            </button>
+          </div>
+
+          <!-- Web Landing Page Container -->
+          <div class="p-4 rounded-xl bg-slate-950 border border-pink-500/20 hover:border-pink-500/40 transition flex items-center justify-between gap-3 group min-w-0">
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] uppercase font-mono font-bold tracking-wider text-pink-400 block mb-0.5">WEB LANDING PAGE URL</span>
+              <a [href]="webLandingPageUrl" target="_blank" class="text-xs font-mono text-pink-200 hover:text-white truncate block hover:underline">
+                {{ webLandingPageUrl }} ↗
+              </a>
+            </div>
+            <a [href]="webLandingPageUrl" target="_blank" class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-pink-600/20 hover:bg-pink-600/40 text-pink-300 border border-pink-500/30 text-xs font-bold transition">
+              Open ↗
             </a>
           </div>
-          <a [href]="webLandingPageUrl" target="_blank" class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-pink-600/20 hover:bg-pink-600/40 text-pink-300 border border-pink-500/30 text-xs font-bold transition">
-            Open ↗
-          </a>
         </div>
       </div>
 
-      <!-- Directory Syndication & Ownership Status Matrix -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- 3. Directory Syndication & Ownership Status Matrix -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm space-y-4 shadow-xl">
+        <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <span>🌐 Directory Syndication & Ownership Status</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Option 1: Live via Alldare Managed Network
+              <span>🌐 Global Directory Syndication</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
+                🟢 Live via Managed Network
               </span>
             </h3>
-            <p class="text-xs text-slate-400 mt-1">Your show is automatically published live across Apple Podcasts, Spotify, Podcast Index, and Listen Notes under Alldare's Publisher Network.</p>
+            <p class="text-xs text-slate-400 mt-1">Your show is automatically published live across Apple Podcasts, Spotify, Podcast Index, and Listen Notes.</p>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           <!-- Directory Card 1: Apple Podcasts -->
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-purple-500/40 transition space-y-3 shadow-md">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <svg class="w-6 h-6 text-purple-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.13c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.64 1.34-.57.67-1.07 1.74-.94 2.78 1.01.08 2.04-.52 2.66-1.27z"/>
-                </svg>
-                <h4 class="text-xs font-bold text-white">Apple Podcasts</h4>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-purple-500/40 transition space-y-3 shadow-md flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-6 h-6 text-purple-400 flex-shrink-0" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.13c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.64 1.34-.57.67-1.07 1.74-.94 2.78 1.01.08 2.04-.52 2.66-1.27z"/>
+                  </svg>
+                  <h4 class="text-xs font-bold text-white">Apple Podcasts</h4>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
+              <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
             </div>
-            <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
             <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
               <a href="https://podcasts.apple.com" target="_blank" class="text-[11px] text-purple-400 hover:underline font-semibold">Listen on Apple ↗</a>
-              <button (click)="openClaimModal(syndications()[2] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition flex items-center gap-1">
-                <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                <span>Claim Control</span>
+              <button (click)="openClaimModal(syndications()[2] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition flex items-center gap-1.5 flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-purple-400 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                <span>Transfer Ownership</span>
               </button>
             </div>
           </div>
 
           <!-- Directory Card 2: Spotify -->
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/40 transition space-y-3 shadow-md">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <svg class="w-6 h-6 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.306-1.76-8.792-.963-.332.076-.662-.134-.738-.466-.076-.332.134-.662.466-.738 3.817-.872 7.086-.49 9.714 1.12.295.18.387.563.207.857zm1.222-2.72c-.226.368-.707.485-1.075.259-2.688-1.652-6.786-2.13-9.965-1.166-.413.125-.85-.107-.976-.52-.125-.413.107-.85.52-.976 3.633-1.102 8.156-.566 11.242 1.328.368.226.485.707.259 1.075zm.134-2.836C14.73 8.944 9.475 8.77 6.42 9.697c-.477.144-.98-.126-1.125-.603-.145-.477.126-.98.603-1.125 3.51-1.066 9.308-.868 12.87 1.246.43.255.57.813.315 1.243-.255.43-.813.57-1.243.315z"/>
-                </svg>
-                <h4 class="text-xs font-bold text-white">Spotify</h4>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/40 transition space-y-3 shadow-md flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-6 h-6 text-emerald-400 flex-shrink-0" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.306-1.76-8.792-.963-.332.076-.662-.134-.738-.466-.076-.332.134-.662.466-.738 3.817-.872 7.086-.49 9.714 1.12.295.18.387.563.207.857zm1.222-2.72c-.226.368-.707.485-1.075.259-2.688-1.652-6.786-2.13-9.965-1.166-.413.125-.85-.107-.976-.52-.125-.413.107-.85.52-.976 3.633-1.102 8.156-.566 11.242 1.328.368.226.485.707.259 1.075zm.134-2.836C14.73 8.944 9.475 8.77 6.42 9.697c-.477.144-.98-.126-1.125-.603-.145-.477.126-.98.603-1.125 3.51-1.066 9.308-.868 12.87 1.246.43.255.57.813.315 1.243-.255.43-.813.57-1.243.315z"/>
+                  </svg>
+                  <h4 class="text-xs font-bold text-white">Spotify</h4>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LIVE</span>
+              <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
             </div>
-            <p class="text-[11px] text-slate-400">Published via Alldare Managed Network.</p>
             <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
               <a href="https://open.spotify.com" target="_blank" class="text-[11px] text-emerald-400 hover:underline font-semibold">Listen on Spotify ↗</a>
-              <button (click)="openClaimModal(syndications()[1] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition flex items-center gap-1">
-                <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                <span>Claim Control</span>
+              <button (click)="openClaimModal(syndications()[1] || syndications()[0])" class="text-[11px] font-semibold px-2.5 py-1 rounded bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition flex items-center gap-1.5 flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-purple-400 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                <span>Transfer Ownership</span>
               </button>
             </div>
           </div>
 
           <!-- Directory Card 3: Podcast Index & Search -->
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 transition space-y-3 shadow-md">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <svg class="w-6 h-6 text-cyan-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 12v-2a8 8 0 0 1 16 0v2"/><path d="M12 12v6"/><circle cx="12" cy="18" r="2"/>
-                </svg>
-                <h4 class="text-xs font-bold text-white">Podcast Index & 50+ Apps</h4>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 transition space-y-3 shadow-md flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-6 h-6 text-cyan-400 flex-shrink-0" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12v-2a8 8 0 0 1 16 0v2"/><path d="M12 12v6"/><circle cx="12" cy="18" r="2"/>
+                  </svg>
+                  <h4 class="text-xs font-bold text-white">Podcast Index & 50+ Apps</h4>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AUTO-INDEXED</span>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AUTO-INDEXED</span>
+              <p class="text-[11px] text-slate-400">Open RSS indexing across Overcast, Pocket Casts, Listen Notes.</p>
             </div>
-            <p class="text-[11px] text-slate-400">Open RSS indexing across Overcast, Pocket Casts, Listen Notes.</p>
             <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
               <a href="https://podcastindex.org" target="_blank" class="text-[11px] text-cyan-400 hover:underline font-semibold">View Index ↗</a>
               <span class="text-[10px] font-mono text-slate-500">0-Click Automated</span>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Metadata Settings Box -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm space-y-6">
-        <h2 class="text-xl font-bold text-white mb-2">Show Metadata & Details</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Show Title</label>
-            <input type="text" [(ngModel)]="show().title" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">URL Slug (e.g. mychannel)</label>
-            <input type="text" [(ngModel)]="show().slug" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm font-mono text-purple-400" />
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-xs font-medium text-slate-300 mb-1">Show Description</label>
-            <textarea [(ngModel)]="show().description" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white"></textarea>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Author Name</label>
-            <input type="text" [(ngModel)]="show().authorName" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Contact Email</label>
-            <input type="email" [(ngModel)]="show().email" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white" />
-          </div>
-        </div>
-
-        <button (click)="saveShow()" class="px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-md transition">
-          Save Show Settings
-        </button>
       </div>
     </div>
 
