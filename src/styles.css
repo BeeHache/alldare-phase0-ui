@@ -73,11 +73,10 @@ option {
 
 .glow-button:hover {
   box-shadow: 0 0 30px rgba(192, 38, 211, 0.65);
-  transform: scale(1.02);
 }
 
 .btn-gradient-primary {
-  background: linear-gradient(135deg, #9333ea 0%, #db2777 50%, #e11d48 100%) !important;
+  background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%) !important;
   color: #ffffff !important;
   padding: 0.75rem 1.25rem !important;
   font-weight: 700 !important;
@@ -86,9 +85,8 @@ option {
 }
 
 .btn-gradient-primary:hover {
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f43f5e 100%) !important;
-  box-shadow: 0 15px 35px -5px rgba(219, 39, 119, 0.55);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important;
+  box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.55);
 }
 
 .btn-thick {

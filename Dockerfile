@@ -1,12 +1,14 @@
 # --- Serve Web UI SPA with Nginx ---
 FROM nginx:alpine
 
-# Copy built Angular SPA assets from dist directory
-COPY dist/alldare-phase0-ui /usr/share/nginx/html
+# Remove default Nginx HTML files
+RUN rm -rf /usr/share/nginx/html/*
 
-# Flatten browser subfolder if present and ensure index.html exists
-RUN if [ -d /usr/share/nginx/html/browser ]; then cp -rf /usr/share/nginx/html/browser/* /usr/share/nginx/html/; fi && \
-    if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then \
+# Copy built Angular SPA assets from browser directory
+COPY dist/alldare-phase0-ui/browser /usr/share/nginx/html
+
+# Ensure index.html exists if CSR build output was generated
+RUN if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then \
         cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; \
     fi
 
@@ -16,6 +18,9 @@ RUN echo 'server { \
     port_in_redirect off; \
     root /usr/share/nginx/html; \
     index index.html index.htm index.csr.html; \
+    add_header Cache-Control "no-cache, no-store, must-revalidate"; \
+    add_header Pragma "no-cache"; \
+    add_header Expires 0; \
     location / { \
         try_files $uri $uri/ /index.html /index.csr.html; \
     } \

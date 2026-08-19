@@ -27,6 +27,7 @@ export class StudioComponent implements OnInit {
   isCreatorProSubscribed = signal<boolean>(false);
   copiedRss = signal<boolean>(false);
   showProfileModal = signal<boolean>(false);
+  showSyndicationDetails = signal<boolean>(false);
 
   // Active Podcast Show
   show = signal<PodcastShow>({
@@ -245,9 +246,9 @@ export class StudioComponent implements OnInit {
     }
   }
 
-  publishEpisode(): void {
+  publishEpisode(isDraft: boolean = true): void {
     if (!this.selectedMediaAsset()) {
-      alert('Please select a media asset from your Media Vault to publish this episode.');
+      alert('Please select a media asset from your Media Vault to create this episode.');
       return;
     }
 
@@ -265,10 +266,24 @@ export class StudioComponent implements OnInit {
         mediaUrl: this.selectedMediaAsset()!.cdnUrl,
         mediaType: this.selectedMediaAsset()!.mediaType,
         durationSeconds: this.selectedMediaAsset()!.durationSeconds,
-        fileSizeBytes: this.selectedMediaAsset()!.fileSizeBytes
+        fileSizeBytes: this.selectedMediaAsset()!.fileSizeBytes,
+        isDraft: isDraft,
+        publishedAt: isDraft ? new Date().toISOString() : new Date().toISOString()
       };
+
+      if (savedEp.showId) {
+        this.podcastService.createEpisode(savedEp).subscribe({
+          next: (res) => {
+            this.episodes.update(list => [res, ...list]);
+          },
+          error: () => {
+            this.episodes.update(list => [savedEp, ...list]);
+          }
+        });
+      } else {
+        this.episodes.update(list => [savedEp, ...list]);
+      }
       
-      this.episodes.update(list => [savedEp, ...list]);
       this.isUploading.set(false);
       this.newEpisode = {
         showId: this.show().id || '',
@@ -277,11 +292,40 @@ export class StudioComponent implements OnInit {
         mediaUrl: '',
         mediaType: 'audio/mpeg',
         durationSeconds: 1800,
-        fileSizeBytes: 25000000
+        fileSizeBytes: 25000000,
+        isDraft: true
       };
 
-      alert(`🚀 Episode "${savedEp.title}" Published to Open RSS 2.0 (${this.rssFeedUrl})!`);
-    }, 1000);
+      if (isDraft) {
+        alert(`💾 Episode "${savedEp.title}" saved in Draft Mode! It is hidden from public RSS feeds and landing pages.`);
+      } else {
+        alert(`🚀 Episode "${savedEp.title}" Published Live to Open RSS 2.0 (${this.rssFeedUrl})!`);
+      }
+    }, 800);
+  }
+
+  toggleEpisodePublishStatus(episode: PodcastEpisode): void {
+    const targetDraftState = !episode.isDraft;
+    if (episode.id && !episode.id.startsWith('ep-')) {
+      const api$ = targetDraftState 
+        ? this.podcastService.revertEpisodeToDraft(episode.id)
+        : this.podcastService.publishEpisodeLive(episode.id);
+
+      api$.subscribe({
+        next: (updated) => {
+          this.episodes.update(list => list.map(e => e.id === updated.id ? updated : e));
+          alert(targetDraftState ? `📝 Episode "${episode.title}" reverted to Draft Mode.` : `🟢 Episode "${episode.title}" is now Live!`);
+        },
+        error: () => {
+          episode.isDraft = targetDraftState;
+          this.episodes.update(list => [...list]);
+        }
+      });
+    } else {
+      episode.isDraft = targetDraftState;
+      this.episodes.update(list => [...list]);
+      alert(targetDraftState ? `📝 Episode "${episode.title}" reverted to Draft Mode.` : `🟢 Episode "${episode.title}" is now Live!`);
+    }
   }
 
   backToPodcasts(): void {

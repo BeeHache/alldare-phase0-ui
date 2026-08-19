@@ -33,6 +33,7 @@ export interface PodcastEpisode {
   episodeNumber?: number;
   seasonNumber?: number;
   publishedAt?: string;
+  isDraft?: boolean;
 }
 
 
@@ -107,6 +108,14 @@ export class PodcastService {
 
   createEpisode(episode: PodcastEpisode): Observable<PodcastEpisode> {
     return this.http.post<PodcastEpisode>(`${this.baseUrl}/episodes`, episode);
+  }
+
+  publishEpisodeLive(id: string): Observable<PodcastEpisode> {
+    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/publish`, {});
+  }
+
+  revertEpisodeToDraft(id: string): Observable<PodcastEpisode> {
+    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/draft`, {});
   }
 
   getRssFeedUrl(slug: string): string {

@@ -265,6 +265,13 @@ export class PodcastListComponent implements OnInit {
     });
   }
 
+  copyCdnUrl(asset: MediaAsset): void {
+    if (asset.cdnUrl) {
+      navigator.clipboard.writeText(asset.cdnUrl);
+      alert(`📋 CDN URL for "${asset.title}" copied to clipboard!`);
+    }
+  }
+
   deleteMediaAsset(asset: MediaAsset): void {
     if (confirm(`Delete "${asset.title}" from your Media Library?`)) {
       this.mediaService.deleteMediaAsset(asset.id).subscribe({
@@ -323,14 +330,30 @@ export class PodcastListComponent implements OnInit {
     });
   }
 
-  openEditModal(show: PodcastShow): void {
+  openEditModal(show: PodcastShow, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!show) return;
     this.editingShow.set(show);
-    const isDefaultImage = !show.coverImageUrl || 
-      show.coverImageUrl === this.DEFAULT_COVER_IMAGE || 
-      show.coverImageUrl.endsWith('default-podcast-cover.jpg');
+    const url = show.coverImageUrl || '';
+    const isDefaultImage = !url || 
+      url === this.DEFAULT_COVER_IMAGE || 
+      (typeof url === 'string' && url.includes('default-podcast-cover.jpg'));
     this.editShowModel = {
-      ...show,
-      coverImageUrl: isDefaultImage ? '' : show.coverImageUrl
+      id: show.id,
+      creatorId: show.creatorId || '',
+      username: show.username || '',
+      slug: show.slug || '',
+      title: show.title || '',
+      description: show.description || '',
+      category: show.category || 'Technology',
+      authorName: show.authorName || '',
+      email: show.email || '',
+      coverImageUrl: isDefaultImage ? '' : url,
+      explicit: show.explicit || false,
+      isPublic: show.isPublic !== false
     };
     this.showEditModal.set(true);
   }
