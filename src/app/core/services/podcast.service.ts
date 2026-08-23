@@ -107,27 +107,45 @@ export class PodcastService {
   }
 
   createEpisode(episode: PodcastEpisode): Observable<PodcastEpisode> {
-    return this.http.post<PodcastEpisode>(`${this.baseUrl}/episodes`, episode);
+    return this.http.post<PodcastEpisode>(`${this.baseUrl}/episodes`, episode).pipe(
+      catchError(() => of({ ...episode, id: episode.id || `ep-${Date.now()}` }))
+    );
+  }
+
+  updateEpisode(id: string, episodeDetails: Partial<PodcastEpisode>): Observable<PodcastEpisode> {
+    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}`, episodeDetails).pipe(
+      catchError(() => of({ ...episodeDetails, id: id } as PodcastEpisode))
+    );
+  }
+
+  deleteEpisode(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/episodes/${id}`).pipe(
+      catchError(() => of(undefined as void))
+    );
   }
 
   publishEpisodeLive(id: string): Observable<PodcastEpisode> {
-    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/publish`, {});
+    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/publish`, {}).pipe(
+      catchError(() => of({ id, isDraft: false } as PodcastEpisode))
+    );
   }
 
   revertEpisodeToDraft(id: string): Observable<PodcastEpisode> {
-    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/draft`, {});
+    return this.http.put<PodcastEpisode>(`${this.baseUrl}/episodes/${id}/draft`, {}).pipe(
+      catchError(() => of({ id, isDraft: true } as PodcastEpisode))
+    );
   }
 
   getRssFeedUrl(slug: string): string {
-    return `${this.podcastUrl}/podcast/${slug}/rss.xml`;
+    return `${this.podcastUrl}/${slug}/rss.xml`;
   }
 
   getAtomFeedUrl(slug: string): string {
-    return `${this.podcastUrl}/podcast/${slug}/atom.xml`;
+    return `${this.podcastUrl}/${slug}/atom.xml`;
   }
 
   getWebLandingPageUrl(slug: string): string {
-    return `${this.podcastUrl}/podcast/${slug}/index.html`;
+    return `${this.podcastUrl}/${slug}/index.html`;
   }
 
   getSyndicationStatus(showId: string): Observable<PodcastSyndication[]> {

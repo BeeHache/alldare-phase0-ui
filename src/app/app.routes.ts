@@ -14,6 +14,8 @@ export const routes: Routes = [
   { path: 'studio', component: StudioComponent, canActivate: [authGuard] },
   { path: 'podcast/:slug/index.html', component: PodcastPublicComponent },
   { path: 'podcast/:slug', component: PodcastPublicComponent },
+  { path: ':slug/index.html', component: PodcastPublicComponent },
+  { path: ':slug', component: PodcastPublicComponent },
   { path: '', redirectTo: 'podcasts', pathMatch: 'full' },
   { path: '**', redirectTo: 'podcasts' }
 ];

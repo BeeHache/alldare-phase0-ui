@@ -27,4 +27,9 @@ export class LoginComponent implements OnInit {
   loginWithGoogle(): void {
     this.authService.loginWithGoogle();
   }
+
+  loginAsDevCreator(): void {
+    this.authService.loginAsDevCreator();
+    this.router.navigate(['/podcasts']);
+  }
 }

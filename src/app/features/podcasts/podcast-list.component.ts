@@ -8,11 +8,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { PostService, SocialPost } from '../../core/services/post.service';
 import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_COVER_IMAGE } from '../../core/constants/app.constants';
+import { PodcastShowModalComponent } from '../../shared/components/podcast-show-modal/podcast-show-modal.component';
+import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
 
 @Component({
   selector: 'app-podcast-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileModalComponent],
+  imports: [CommonModule, FormsModule, ProfileModalComponent, PodcastShowModalComponent, MediaPickerModalComponent],
   templateUrl: './podcast-list.component.html',
   styleUrls: ['./podcast-list.component.scss']
 })
@@ -34,6 +36,89 @@ export class PodcastListComponent implements OnInit {
   showProfileModal = signal<boolean>(false);
   showMediaPickerModal = signal<boolean>(false);
   mediaPickerTarget = signal<'create' | 'edit' | null>(null);
+
+  // Search & Filter Signals across Studio Tabs
+  podcastSearchQuery = signal<string>('');
+  postSearchQuery = signal<string>('');
+  mediaSearchQuery = signal<string>('');
+  mediaTypeFilter = signal<'all' | 'audio' | 'video'>('all');
+  copiedAssetId = signal<string | null>(null);
+  playingAudioAssetId = signal<string | null>(null);
+  activeVideoPlayerAsset = signal<MediaAsset | null>(null);
+  private currentAudioElement: HTMLAudioElement | null = null;
+
+  openVideoPlayer(asset: MediaAsset): void {
+    if (asset.mediaType.startsWith('video') && asset.cdnUrl) {
+      this.activeVideoPlayerAsset.set(asset);
+    }
+  }
+
+  closeVideoPlayer(): void {
+    this.activeVideoPlayerAsset.set(null);
+  }
+
+  resetMediaFilters(): void {
+    this.mediaSearchQuery.set('');
+    this.mediaTypeFilter.set('all');
+  }
+
+  toggleAudioPreview(asset: MediaAsset): void {
+    if (!asset.cdnUrl) return;
+
+    if (this.playingAudioAssetId() === asset.id) {
+      if (this.currentAudioElement) {
+        this.currentAudioElement.pause();
+      }
+      this.playingAudioAssetId.set(null);
+      return;
+    }
+
+    if (this.currentAudioElement) {
+      this.currentAudioElement.pause();
+    }
+
+    this.currentAudioElement = new Audio(asset.cdnUrl);
+    this.currentAudioElement.play().then(() => {
+      this.playingAudioAssetId.set(asset.id);
+    }).catch(() => {
+      this.playingAudioAssetId.set(null);
+    });
+
+    this.currentAudioElement.onended = () => {
+      this.playingAudioAssetId.set(null);
+    };
+  }
+
+  filteredShows(): PodcastShow[] {
+    const query = (this.podcastSearchQuery() || '').toLowerCase().trim();
+    return this.shows().filter(s =>
+      !query || (s.title && s.title.toLowerCase().includes(query)) || (s.description && s.description.toLowerCase().includes(query)) || (s.category && s.category.toLowerCase().includes(query))
+    );
+  }
+
+  filteredPosts(): SocialPost[] {
+    const query = (this.postSearchQuery() || '').toLowerCase().trim();
+    return this.posts().filter(p =>
+      !query || (p.content && p.content.toLowerCase().includes(query)) || (p.username && p.username.toLowerCase().includes(query))
+    );
+  }
+
+  filteredMediaAssets(): MediaAsset[] {
+    const query = (this.mediaSearchQuery() || '').toLowerCase().trim();
+    const filter = this.mediaTypeFilter();
+
+    return this.mediaAssets().filter(asset => {
+      const title = (asset.title || '').toLowerCase();
+      const originalName = (asset.originalName || '').toLowerCase();
+      const filename = (asset.filename || '').toLowerCase();
+      const matchesQuery = !query || title.includes(query) || originalName.includes(query) || filename.includes(query);
+
+      const isVideo = (asset.mediaType || '').toLowerCase().startsWith('video');
+      const matchesType = filter === 'all' || (filter === 'video' && isVideo) || (filter === 'audio' && !isVideo);
+
+      return matchesQuery && matchesType;
+    });
+  }
 
   editingShow = signal<PodcastShow | null>(null);
   editShowModel: PodcastShow = {
@@ -102,19 +187,19 @@ export class PodcastListComponent implements OnInit {
 
   loadShows(creatorId: string): void {
     this.podcastService.getShowsByCreatorId(creatorId).subscribe(list => {
-      this.shows.set(list);
+      this.shows.set(list || []);
     });
   }
 
   loadPosts(creatorId: string): void {
     this.postService.getPostsByCreatorId(creatorId).subscribe(list => {
-      this.posts.set(list);
+      this.posts.set(list || []);
     });
   }
 
   loadMediaAssets(creatorId: string): void {
     this.mediaService.getMediaAssets(creatorId).subscribe(assets => {
-      this.mediaAssets.set(assets);
+      this.mediaAssets.set(assets || []);
     });
   }
 
@@ -172,7 +257,27 @@ export class PodcastListComponent implements OnInit {
     this.newShow.slug = this.podcastService.slugify(title);
   }
 
+  autoGenerateSlug(): void {
+    if (this.newShow.title) {
+      this.newShow.slug = this.podcastService.slugify(this.newShow.title);
+    }
+  }
+
   openCreateModal(): void {
+    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
+    const username = this.authService.currentUser()?.username || DEFAULT_USERNAME;
+    this.newShow = {
+      creatorId: creatorId,
+      username: username,
+      slug: '',
+      title: '',
+      description: '',
+      category: 'Technology',
+      authorName: username,
+      email: DEFAULT_EMAIL,
+      coverImageUrl: '',
+      explicit: false
+    };
     this.showCreateModal.set(true);
   }
 
@@ -269,7 +374,12 @@ export class PodcastListComponent implements OnInit {
   copyCdnUrl(asset: MediaAsset): void {
     if (asset.cdnUrl) {
       navigator.clipboard.writeText(asset.cdnUrl);
-      alert(`📋 CDN URL for "${asset.title}" copied to clipboard!`);
+      this.copiedAssetId.set(asset.id);
+      setTimeout(() => {
+        if (this.copiedAssetId() === asset.id) {
+          this.copiedAssetId.set(null);
+        }
+      }, 2500);
     }
   }
 
@@ -292,6 +402,16 @@ export class PodcastListComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  createPodcastShowWithData(showData: PodcastShow): void {
+    this.newShow = { ...showData };
+    this.createPodcastShow();
+  }
+
+  updatePodcastShowWithData(showData: PodcastShow): void {
+    this.editShowModel = { ...showData };
+    this.updatePodcastShow();
   }
 
   createPodcastShow(): void {
@@ -451,7 +571,7 @@ export class PodcastListComponent implements OnInit {
   }
 
   manageShow(show: PodcastShow): void {
-    this.router.navigate(['/studio', show.slug || 'mychannel']);
+    this.router.navigate(['/studio', show.slug || 'mychannel'], { queryParams: { tab: 'episodes' } });
   }
 
   resetForm(): void {

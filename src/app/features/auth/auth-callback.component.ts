@@ -24,17 +24,21 @@ export class AuthCallbackComponent implements OnInit {
   ngOnInit(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-    const username = urlParams.get('username') || 'creator';
-    const email = urlParams.get('email') || 'creator@alldare.online';
+    const username = urlParams.get('username') || '';
+    const email = urlParams.get('email') || (username ? `${username}@alldare.online` : '');
     const provider = (urlParams.get('provider') as 'github' | 'google') || 'github';
+    const avatarParam = urlParams.get('avatarUrl');
+    const avatarUrl = (avatarParam && avatarParam !== 'null' && avatarParam !== 'undefined')
+      ? avatarParam
+      : (provider === 'github' && username ? `https://github.com/${username}.png` : '');
 
     if (token) {
       this.authService.setSession(token, {
-        id: urlParams.get('userId') || '00000000-0000-0000-0000-000000000001',
+        id: urlParams.get('userId') || '',
         username: username,
         email: email,
         authorName: username,
-        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`,
+        avatarUrl: avatarUrl,
         provider: provider
       });
 

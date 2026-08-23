@@ -33,17 +33,6 @@
   <!-- Dashboard Main Content -->
   <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
     
-    <!-- Unified Hero Banner -->
-    <div class="mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-800/40 shadow-2xl relative overflow-hidden text-center max-w-4xl mx-auto space-y-3">
-      <span class="inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-        ⚡ Creator Media Distribution & Open Syndication Engine
-      </span>
-      <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Unified Creator Publisher</h2>
-      <p class="text-slate-400 text-xs max-w-xl mx-auto leading-relaxed">
-        Syndicate open RSS 2.0 podcasts, publish media clips across external social networks, or manage raw assets in your <strong>Media Library</strong>.
-      </p>
-    </div>
-
     <!-- Navigation Tabs (Mobile Horizontally Scrollable / Desktop Centered) -->
     <div class="flex items-center justify-start sm:justify-center gap-3 mb-8 border-b border-slate-800 pb-4 overflow-x-auto no-scrollbar">
       <button (click)="activeDashboardTab.set('podcasts')" [class.bg-purple-600]="activeDashboardTab() === 'podcasts'" [class.text-white]="activeDashboardTab() === 'podcasts'" [class.bg-slate-800]="activeDashboardTab() !== 'podcasts'" [class.text-slate-300]="activeDashboardTab() !== 'podcasts'" class="whitespace-nowrap px-5 py-3 rounded-2xl font-bold text-xs transition flex items-center gap-2 border border-slate-700 flex-shrink-0">
@@ -67,16 +56,27 @@
 
     <!-- TAB 1: OUTBOUND SOCIAL MEDIA DISTRIBUTIONS -->
     <div *ngIf="activeDashboardTab() === 'social'" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>Social Media Distributions</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-3 py-0.5 rounded-full font-normal">{{ posts().length }}</span>
-        </h3>
+      
+      <!-- Studio Control Bar Header for Social Distributions -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <span>Social Distributions</span>
+            <span class="text-xs bg-slate-800 text-purple-400 border border-slate-700/80 px-3 py-1 rounded-full font-mono font-medium">{{ filteredPosts().length }} Posts</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-3 flex-1 max-w-xl">
+          <div class="relative w-full">
+            <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" [(ngModel)]="postSearchQuery" placeholder="Search social posts or username..." class="w-full h-12 bg-slate-950 border border-slate-700/80 text-slate-100 placeholder-slate-400 text-sm rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-purple-500 transition font-medium shadow-inner" />
+          </div>
+        </div>
       </div>
 
-      <!-- Outbound Social Media Distribution Cards Grid (Always renders with dashed card, matching Podcast Channels model) -->
+      <!-- Outbound Social Media Distribution Cards Grid -->
       <div class="flex flex-wrap gap-6 items-stretch">
-        <div *ngFor="let p of posts()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
+        <div *ngFor="let p of filteredPosts()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
           <div>
             <!-- Header & Creator Info -->
             <div class="flex items-start gap-4 mb-4">
@@ -146,16 +146,34 @@
 
     <!-- TAB 2: PODCAST CHANNELS -->
     <div *ngIf="activeDashboardTab() === 'podcasts'" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>Active Podcast Channels</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-3 py-0.5 rounded-full font-normal">{{ shows().length }}</span>
-        </h3>
+      
+      <!-- Studio Control Bar Header for Podcast Channels -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <span>Podcast Channels</span>
+            <span class="text-xs bg-slate-800 text-pink-300 border border-slate-700/80 px-3 py-1 rounded-full font-mono font-medium">{{ filteredShows().length }} Shows</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-3 flex-1 max-w-2xl">
+          <div class="relative w-full">
+            <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" [(ngModel)]="podcastSearchQuery" placeholder="Search podcast show title or category..." class="w-full h-12 bg-slate-950 border border-slate-700/80 text-slate-100 placeholder-slate-400 text-sm rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-purple-500 transition font-medium shadow-inner" />
+          </div>
+
+          <button (click)="openCreateModal()" type="button" class="h-12 px-5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 whitespace-nowrap transition flex-shrink-0">
+            <svg class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Create New Channel</span>
+          </button>
+        </div>
       </div>
 
       <!-- Grid Cards (Standard Capped Card Width max-w-md) -->
-      <div *ngIf="shows().length > 0" class="flex flex-wrap gap-6 items-stretch">
-        <div *ngFor="let s of shows()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
+      <div class="flex flex-wrap gap-6 items-stretch">
+        <div *ngFor="let s of filteredShows()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
           
           <div>
             <!-- Show Header & Cover Image -->
@@ -164,7 +182,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <span class="text-[11px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md truncate">
-                    /podcast/{{ s.slug }}
+                    /{{ s.slug }}
                   </span>
 
                   <!-- Interactive Switch Toggle Control -->
@@ -197,7 +215,7 @@
                   RSS 2.0 SYNDICATION FEED
                 </div>
                 <a [href]="getRssUrl(s.slug || '')" target="_blank" title="Click to open RSS 2.0 feed" class="text-xs font-mono text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/40 px-3 py-1.5 rounded-xl block truncate transition select-all">
-                  /podcast/{{ s.slug }}/rss.xml ↗
+                  /{{ s.slug }}/rss.xml ↗
                 </a>
               </div>
 
@@ -206,7 +224,7 @@
                   WEB LANDING PAGE
                 </div>
                 <a [href]="getWebUrl(s.slug || '')" target="_blank" title="Click to open web landing page" class="text-xs font-mono text-pink-300 hover:text-pink-200 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 hover:border-pink-500/40 px-3 py-1.5 rounded-xl block truncate transition select-all">
-                  /podcast/{{ s.slug }}/index.html ↗
+                  /{{ s.slug }}/index.html ↗
                 </a>
               </div>
             </div>
@@ -239,68 +257,133 @@
           </div>
         </div>
       </div>
-
-      <!-- Empty State Card when creator has 0 podcasts -->
-      <div *ngIf="shows().length === 0" class="bg-slate-900/60 border border-slate-800 rounded-3xl p-10 text-center max-w-md mx-auto space-y-4 shadow-2xl backdrop-blur-md">
-        <div class="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center text-white shadow-xl shadow-purple-500/30 border border-purple-400/30">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-          </svg>
-        </div>
-        <h4 class="text-xl font-bold text-white">No Podcast Channels Yet</h4>
-        <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-          Click <strong class="text-purple-300">+ Create New Podcast</strong> in the top header navigation bar to launch your first show!
-        </p>
-      </div>
     </div>
 
     <!-- TAB 3: DEDICATED MEDIA LIBRARY SCREEN -->
     <div *ngIf="activeDashboardTab() === 'vault'" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>Media Library Assets</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-3 py-0.5 rounded-full font-normal">{{ mediaAssets().length }}</span>
-        </h3>
+      
+      <!-- Studio Control Bar Header -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Title & Count -->
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <span>Media Library</span>
+            <span class="text-xs bg-slate-800 text-cyan-400 border border-slate-700/80 px-3 py-1 rounded-full font-mono font-medium">{{ filteredMediaAssets().length }} Assets</span>
+          </h3>
+        </div>
+
+        <!-- Search Input & Type Filter Pills -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 flex-1 max-w-2xl">
+          <!-- Search Box (Taller height h-12 with clear text) -->
+          <div class="relative w-full">
+            <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" [(ngModel)]="mediaSearchQuery" placeholder="Search media assets by title or filename..." class="w-full h-12 bg-slate-950 border border-slate-700/80 text-slate-100 placeholder-slate-400 text-sm rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-cyan-500 transition font-medium shadow-inner" />
+          </div>
+
+          <!-- Type Filters -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button (click)="mediaTypeFilter.set('all')" [class]="mediaTypeFilter() === 'all' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'" class="px-4 py-3 rounded-xl border text-xs font-bold transition">
+              All ({{ mediaAssets().length }})
+            </button>
+            <button (click)="mediaTypeFilter.set('audio')" [class]="mediaTypeFilter() === 'audio' ? 'bg-purple-500/20 text-purple-300 border-purple-500/50' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'" class="px-4 py-3 rounded-xl border text-xs font-bold transition">
+              Audio
+            </button>
+            <button (click)="mediaTypeFilter.set('video')" [class]="mediaTypeFilter() === 'video' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'" class="px-4 py-3 rounded-xl border text-xs font-bold transition">
+              Video
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- Asset Library Grid Cards (Always renders with dashed card, matching Podcast Channels model) -->
-      <div class="flex flex-wrap gap-6 items-stretch">
-        <div *ngFor="let asset of mediaAssets()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-cyan-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
+      <!-- Asset Grid (Responsive flex grid) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+        <div *ngFor="let asset of filteredMediaAssets()" class="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 rounded-3xl p-5 backdrop-blur-md shadow-xl transition-all duration-300 flex flex-col justify-between group hover:shadow-cyan-500/5 hover:-translate-y-1 overflow-hidden">
           <div>
-            <!-- Header & Media Asset Icon -->
-            <div class="flex items-start gap-4 mb-4">
-              <div class="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 shadow-md">
-                <svg *ngIf="asset.mediaType.startsWith('video')" class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                <svg *ngIf="!asset.mediaType.startsWith('video')" class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                  <span class="text-[11px] font-mono font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md truncate">
+            <!-- RICH MEDIA THUMBNAIL CONTAINER (160px height) -->
+            <div class="relative w-full h-40 rounded-2xl overflow-hidden mb-4 border border-slate-800 bg-slate-950 flex items-center justify-center group-hover:border-cyan-500/30 transition" style="height: 160px; min-height: 160px;">
+              
+              <!-- 1. VIDEO THUMBNAIL PREVIEW (<video> poster) -->
+              <ng-container *ngIf="asset.mediaType.startsWith('video')">
+                <div (click)="openVideoPlayer(asset)" title="Click to launch Video Player" class="w-full h-full cursor-pointer relative group/vid">
+                  <video [src]="asset.cdnUrl" preload="metadata" muted playsinline class="w-full h-full object-cover opacity-80 group-hover/vid:opacity-100 group-hover/vid:scale-105 transition-all duration-300"></video>
+                  <!-- Dark Gradient Overlay -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent"></div>
+                  <!-- Play Hover Overlay Badge -->
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/50 backdrop-blur-md flex items-center justify-center text-cyan-300 shadow-lg group-hover/vid:scale-110 group-hover/vid:bg-cyan-500/40 transition transform">
+                      <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                  <!-- Top Badge: Format & Type -->
+                  <div class="absolute top-2.5 left-2.5">
+                    <span class="text-[10px] font-mono font-bold text-cyan-300 bg-slate-950/80 border border-cyan-500/30 px-2 py-0.5 rounded-md backdrop-blur-md">
+                      {{ asset.mediaType }}
+                    </span>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- 2. AUDIO STUDIO WAVEFORM SPECTRUM PREVIEW -->
+              <ng-container *ngIf="!asset.mediaType.startsWith('video')">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-950/80 via-slate-950 to-slate-900 border border-purple-800/40 flex items-center justify-center px-6">
+                  <!-- Animated Audio Equalizer Bars -->
+                  <div class="flex items-center justify-center gap-1.5 w-full h-20 opacity-75 group-hover:opacity-100 transition">
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-8" [class.animate-wave-1]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-14" [class.animate-wave-2]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-10" [class.animate-wave-3]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-16" [class.animate-wave-4]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-6" [class.animate-wave-5]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-12" [class.animate-wave-2]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-18" [class.animate-wave-1]="playingAudioAssetId() === asset.id"></div>
+                    <div class="w-1.5 bg-gradient-to-t from-purple-600 via-pink-500 to-cyan-400 rounded-full h-10" [class.animate-wave-3]="playingAudioAssetId() === asset.id"></div>
+                  </div>
+
+                  <!-- Central Audio Play/Pause Button -->
+                  <button (click)="toggleAudioPreview(asset)" [title]="playingAudioAssetId() === asset.id ? 'Pause Audio Preview' : 'Play Audio Preview'" class="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition transform">
+                    <div [class]="playingAudioAssetId() === asset.id ? 'bg-purple-600 border-purple-400 text-white shadow-purple-500/30' : 'bg-slate-900/90 border-slate-700 text-purple-300 hover:border-purple-400'" class="px-4 py-2 rounded-full border backdrop-blur-md flex items-center gap-2 text-xs font-bold shadow-xl transition">
+                      <svg *ngIf="playingAudioAssetId() !== asset.id" class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      <svg *ngIf="playingAudioAssetId() === asset.id" class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                      <span>{{ playingAudioAssetId() === asset.id ? 'Playing Preview' : 'Play Audio Preview' }}</span>
+                    </div>
+                  </button>
+                </div>
+                <!-- Top Badge: Audio Type -->
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="text-[10px] font-mono font-bold text-purple-300 bg-slate-950/80 border border-purple-500/30 px-2 py-0.5 rounded-md backdrop-blur-md">
                     {{ asset.mediaType }}
                   </span>
-                  <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/40">
-                    READY
-                  </span>
                 </div>
-                <h4 class="text-lg font-black text-white leading-snug group-hover:text-cyan-300 transition truncate">{{ asset.title || asset.originalName }}</h4>
-                <p class="text-xs text-slate-400 font-medium mt-1 truncate">{{ (asset.durationSeconds / 60) | number:'1.0-0' }} mins • {{ (asset.fileSizeBytes / 1000000) | number:'1.1-1' }} MB</p>
+              </ng-container>
+
+              <!-- Ready Status Pill (Bottom-Right of Thumbnail) -->
+              <div class="absolute bottom-2.5 right-2.5">
+                <span class="text-[10px] font-mono text-emerald-400 bg-slate-950/90 px-2.5 py-0.5 rounded-md border border-emerald-500/40 flex items-center gap-1 backdrop-blur-md shadow-md">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  READY
+                </span>
               </div>
             </div>
 
-            <p class="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-2">
-              Original Filename: <strong class="text-slate-300 font-mono">{{ asset.originalName }}</strong>
+            <!-- Asset Title & Meta Specs -->
+            <div class="mb-4">
+              <h4 class="text-base sm:text-lg font-black text-white leading-snug group-hover:text-cyan-300 transition truncate max-w-full block" [title]="asset.title || asset.originalName">{{ asset.title || asset.originalName }}</h4>
+              <p class="text-xs text-slate-400 font-medium mt-1 truncate">{{ (asset.durationSeconds / 60) | number:'1.0-0' }} mins • {{ (asset.fileSizeBytes / 1000000) | number:'1.1-1' }} MB</p>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed mb-4 truncate" [title]="asset.originalName">
+              Original Filename: <strong class="text-slate-300 font-mono break-all">{{ asset.originalName }}</strong>
             </p>
 
             <!-- CDN URL Information Box -->
-            <div class="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-4 space-y-3 mb-6">
-              <div>
-                <div class="text-[10px] font-mono font-bold text-slate-500 tracking-wider mb-1">
-                  VAULT CDN STORAGE ENDPOINT
-                </div>
-                <div (click)="copyCdnUrl(asset)" title="Click to copy CDN URL" class="text-xs font-mono text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 px-3 py-1.5 rounded-xl block truncate transition select-all cursor-pointer flex items-center justify-between">
-                  <span class="truncate">{{ asset.cdnUrl }}</span>
-                  <svg class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 14h4m-4-4h4m-6-4h6"></path></svg>
-                </div>
+            <div class="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-3.5 space-y-2 mb-4">
+              <div class="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500 tracking-wider">
+                <span>VAULT CDN ENDPOINT</span>
+                <span class="text-cyan-400/80">S3 Presigned</span>
+              </div>
+              <div (click)="copyCdnUrl(asset)" title="Click to copy CDN URL" class="text-xs font-mono text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 px-3 py-2 rounded-xl block truncate transition select-all cursor-pointer flex items-center justify-between">
+                <span class="truncate pr-2">{{ asset.cdnUrl }}</span>
+                <span *ngIf="copiedAssetId() === asset.id" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-md flex-shrink-0">Copied!</span>
+                <svg *ngIf="copiedAssetId() !== asset.id" class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 14h4m-4-4h4m-6-4h6"></path></svg>
               </div>
             </div>
           </div>
@@ -308,257 +391,104 @@
           <!-- Actions Bar -->
           <div class="flex items-center gap-2 pt-4 border-t border-slate-800/80">
             <button (click)="copyCdnUrl(asset)" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 14h4m-4-4h4m-6-4h6"></path></svg>
-              <span>Copy Asset URL</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 14h4m-4-4h4m-6-4h6"></path></svg>
+              <span>{{ copiedAssetId() === asset.id ? 'Copied to Clipboard!' : 'Copy Asset URL' }}</span>
             </button>
-            <button (click)="deleteMediaAsset(asset)" title="Delete Media Asset" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 border border-slate-700 transition text-xs font-semibold">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <button (click)="deleteMediaAsset(asset)" title="Delete Media Asset" class="py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 border border-slate-700 transition text-xs font-semibold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
           </div>
         </div>
 
         <!-- Dashed Add Asset Placeholder Card -->
-        <div (click)="openUploadAssetModal()" class="w-full sm:w-[280px] max-w-md bg-slate-900/20 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg transition flex flex-col items-center justify-center text-center cursor-pointer group min-h-[380px] space-y-3">
-          <div class="h-14 w-14 rounded-2xl bg-slate-800/80 group-hover:bg-cyan-600/20 border border-slate-700 group-hover:border-cyan-500/40 flex items-center justify-center text-cyan-400 transition">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        <div (click)="openUploadAssetModal()" class="w-full min-h-[320px] h-full bg-slate-900/20 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-3xl p-6 backdrop-blur-md shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer group space-y-3">
+          <div class="h-14 w-14 rounded-2xl bg-slate-800/80 group-hover:bg-cyan-600/20 border border-slate-700 group-hover:border-cyan-500/40 flex items-center justify-center text-cyan-400 transition transform group-hover:scale-110">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
           </div>
           <div>
-            <h5 class="text-sm font-bold text-slate-300 group-hover:text-white transition">Upload New Asset</h5>
-            <p class="text-xs text-slate-500 mt-1 max-w-[200px] leading-relaxed">Add raw audio or 4K video files to media repository</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- Create New Podcast Modal -->
-  <div *ngIf="showCreateModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
-      <button (click)="closeCreateModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
-
-      <div class="flex-shrink-0 mb-4">
-        <h3 class="text-2xl font-extrabold text-white mb-1">Create New Podcast Show</h3>
-        <p class="text-xs text-slate-400">Specify a title and unique URL slug for your podcast channel.</p>
-      </div>
-
-      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
-        <div>
-          <label class="form-label-prominent">Podcast Show Title</label>
-          <input type="text" [(ngModel)]="newShow.title" (ngModelChange)="onTitleInput($event)" placeholder="Enter title (e.g. Deep Tech Talk)" class="form-input-prominent" />
-        </div>
-
-        <div>
-          <label class="form-label-prominent">Unique URL Slug (a-z0-9-)</label>
-          <input type="text" [(ngModel)]="newShow.slug" placeholder="Enter slug (e.g. deep-tech-talk)" class="form-input-prominent font-mono text-purple-300" />
-          <p class="text-[11px] text-slate-500 mt-1">RSS URL: <span class="font-mono text-purple-300">{{ getRssUrl(newShow.slug || 'slug') }}</span></p>
-        </div>
-
-        <div>
-          <label class="form-label-prominent">Show Description</label>
-          <textarea [(ngModel)]="newShow.description" rows="3" placeholder="Write a show summary and host details..." class="form-input-prominent resize-none"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="form-label-prominent">Category</label>
-            <select [(ngModel)]="newShow.category" class="form-input-prominent">
-              <option value="Technology">Technology</option>
-              <option value="Business">Business</option>
-              <option value="Education">Education</option>
-              <option value="Arts">Arts</option>
-              <option value="Society & Culture">Society & Culture</option>
-              <option value="News">News</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Health & Fitness">Health & Fitness</option>
-              <option value="Science">Science</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label-prominent">Author Name</label>
-            <input type="text" [(ngModel)]="newShow.authorName" class="form-input-prominent" />
-          </div>
-        </div>
-
-        <div>
-          <label class="form-label-prominent">Cover Image URL</label>
-          <div class="flex items-center gap-2">
-            <input type="text" [(ngModel)]="newShow.coverImageUrl" placeholder="Leave blank for default cover art, or enter URL / pick from media library" class="form-input-prominent flex-1" />
-            <button type="button" (click)="openMediaPicker('create')" class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 shadow-sm">
-              <svg class="w-4 h-4 flex-shrink-0 text-purple-300" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <span>Pick Media</span>
-            </button>
-          </div>
-          <!-- Live Preview with Hover Popover -->
-          <div class="mt-2.5 flex items-center gap-3 p-2 bg-slate-950/60 border border-slate-800 rounded-xl relative">
-            <div class="relative flex-shrink-0 cursor-pointer popover-thumb-wrapper">
-              <img [src]="newShow.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; max-height: 48px; object-fit: cover;" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105" alt="Preview" />
-              <!-- Hover Floating Popover Preview -->
-              <div class="absolute bottom-full left-0 mb-3 popover-preview z-50 transition-all duration-200 ease-out">
-                <div class="bg-slate-900 border-2 border-purple-500/60 p-2 rounded-2xl shadow-2xl backdrop-blur-xl">
-                  <img [src]="newShow.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 220px; height: 220px; min-width: 220px; max-width: 220px; max-height: 220px; object-fit: cover;" class="rounded-xl object-cover shadow-inner" alt="Enlarged Hover Preview" />
-                  <span class="block text-[10px] font-mono text-purple-300 text-center mt-1.5 font-bold">🔍 Live Cover Art Preview</span>
-                </div>
-              </div>
-            </div>
-            <div class="truncate text-[11px]">
-              <span class="text-slate-400 block font-medium">{{ newShow.coverImageUrl ? 'Custom Cover Image Selected (Hover thumbnail for full preview)' : 'Default Cover Art (Hover thumbnail for full preview)' }}</span>
-              <span class="text-purple-300 font-mono truncate block">{{ newShow.coverImageUrl || DEFAULT_COVER_IMAGE }}</span>
-            </div>
+            <h5 class="text-base font-bold text-slate-300 group-hover:text-white transition">Upload New Asset</h5>
+            <p class="text-xs text-slate-500 mt-1 max-w-[220px] leading-relaxed">Add raw audio podcasts or 4K video clips to your media library repository</p>
           </div>
         </div>
       </div>
 
-      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
-        <button (click)="closeCreateModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-          Cancel
-        </button>
-        <button (click)="createPodcastShow()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2">
-          <svg class="w-4 h-4 text-white flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-          <span>Create & Publish Show</span>
+      <!-- Search Empty State Feedback Indicator -->
+      <div *ngIf="filteredMediaAssets().length === 0 && mediaAssets().length > 0" class="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 text-center space-y-3 max-w-lg mx-auto my-6">
+        <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-slate-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <h4 class="text-lg font-bold text-white">No Matching Media Assets</h4>
+        <p class="text-xs text-slate-400 leading-relaxed">No assets match your search term or category filter. Try clearing your search query.</p>
+        <button (click)="resetMediaFilters()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-xl text-xs font-semibold transition">
+          Reset Search & Filters
         </button>
       </div>
     </div>
-  </div>
 
-  <!-- Edit Podcast Show Modal -->
-  <div *ngIf="showEditModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-    <div class="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative flex flex-col overflow-hidden">
-      <button (click)="closeEditModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg z-10">✕</button>
+   <!-- Studio Video Player Modal -->
+  <div *ngIf="activeVideoPlayerAsset()" (click)="closeVideoPlayer()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 sm:p-6 cursor-pointer">
+    
+    <!-- Outer Modal Container with Close Button -->
+    <div (click)="$event.stopPropagation()" class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col relative cursor-default" style="max-width: 860px; max-height: 90vh;">
+      
+      <!-- Prominent Close Button Header -->
+      <button (click)="closeVideoPlayer(); $event.stopPropagation()" title="Close Video Player" class="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-slate-950/90 hover:bg-rose-900/60 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-white flex items-center justify-center font-bold text-lg transition shadow-xl cursor-pointer">
+        ✕
+      </button>
 
-      <div class="flex-shrink-0 mb-4">
-        <h3 class="text-2xl font-extrabold text-white mb-1">Edit Podcast Show</h3>
-        <p class="text-xs text-slate-400">Update podcast details. The URL slug is immutable to preserve feed subscribers.</p>
+      <!-- Video Player Container -->
+      <div class="w-full bg-black relative aspect-video flex items-center justify-center overflow-hidden" style="min-height: 380px; max-height: 520px;">
+        <video [src]="activeVideoPlayerAsset()?.cdnUrl" controls autoplay class="w-full h-full object-contain"></video>
       </div>
 
-      <div class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
-        <div>
-          <label class="form-label-prominent">Podcast Show Title</label>
-          <input type="text" [(ngModel)]="editShowModel.title" placeholder="Enter title" class="form-input-prominent" />
+      <!-- Video Inspector Metadata Bar -->
+      <div class="p-5 sm:p-6 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="min-w-0 flex-1 pr-4">
+          <span class="text-[10px] font-mono font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-md inline-block mb-1">
+            {{ activeVideoPlayerAsset()?.mediaType }}
+          </span>
+          <h3 class="text-lg font-black text-white truncate max-w-full block" [title]="activeVideoPlayerAsset()?.title || activeVideoPlayerAsset()?.originalName">{{ activeVideoPlayerAsset()?.title || activeVideoPlayerAsset()?.originalName }}</h3>
+          <p class="text-xs text-slate-400 font-mono mt-0.5 truncate" [title]="activeVideoPlayerAsset()?.originalName">Filename: {{ activeVideoPlayerAsset()?.originalName }}</p>
         </div>
 
-        <div>
-          <label class="form-label-prominent">URL Slug (Immutable)</label>
-          <input type="text" [value]="editShowModel.slug" disabled class="form-input-prominent font-mono text-slate-500 bg-slate-950/60 border-slate-800 cursor-not-allowed select-none" />
-          <p class="text-[11px] text-amber-400/80 mt-1 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-            <span>URL Slug cannot be changed after podcast creation.</span>
-          </p>
-        </div>
-
-        <div>
-          <label class="form-label-prominent">Show Description</label>
-          <textarea [(ngModel)]="editShowModel.description" rows="3" placeholder="Write a show summary..." class="form-input-prominent resize-none"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="form-label-prominent">Category</label>
-            <select [(ngModel)]="editShowModel.category" class="form-input-prominent">
-              <option value="Technology">Technology</option>
-              <option value="Business">Business</option>
-              <option value="Education">Education</option>
-              <option value="Arts">Arts</option>
-              <option value="Society & Culture">Society & Culture</option>
-              <option value="News">News</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Health & Fitness">Health & Fitness</option>
-              <option value="Science">Science</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label-prominent">Author Name</label>
-            <input type="text" [(ngModel)]="editShowModel.authorName" class="form-input-prominent" />
-          </div>
-        </div>
-
-        <div>
-          <label class="form-label-prominent">Cover Image URL</label>
-          <div class="flex items-center gap-2">
-            <input type="text" [(ngModel)]="editShowModel.coverImageUrl" placeholder="Leave blank for default cover art, or enter URL / pick from media library" class="form-input-prominent flex-1" />
-            <button type="button" (click)="openMediaPicker('edit')" class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 shadow-sm">
-              <svg class="w-4 h-4 flex-shrink-0 text-purple-300" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <span>Pick Media</span>
-            </button>
-          </div>
-          <!-- Live Preview with Hover Popover -->
-          <div class="mt-2.5 flex items-center gap-3 p-2 bg-slate-950/60 border border-slate-800 rounded-xl relative">
-            <div class="relative flex-shrink-0 cursor-pointer popover-thumb-wrapper">
-              <img [src]="editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; max-height: 48px; object-fit: cover;" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shadow-sm flex-shrink-0 transition-transform duration-200 hover:scale-105" alt="Preview" />
-              <!-- Hover Floating Popover Preview -->
-              <div class="absolute bottom-full left-0 mb-3 popover-preview z-50 transition-all duration-200 ease-out">
-                <div class="bg-slate-900 border-2 border-purple-500/60 p-2 rounded-2xl shadow-2xl backdrop-blur-xl">
-                  <img [src]="editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE" (error)="$any($event.target).src=DEFAULT_COVER_IMAGE" style="width: 220px; height: 220px; min-width: 220px; max-width: 220px; max-height: 220px; object-fit: cover;" class="rounded-xl object-cover shadow-inner" alt="Enlarged Hover Preview" />
-                  <span class="block text-[10px] font-mono text-purple-300 text-center mt-1.5 font-bold">🔍 Live Cover Art Preview</span>
-                </div>
-              </div>
-            </div>
-            <div class="truncate text-[11px]">
-              <span class="text-slate-400 block font-medium">{{ editShowModel.coverImageUrl ? 'Custom Cover Image Selected (Hover thumbnail for full preview)' : 'Default Cover Art (Hover thumbnail for full preview)' }}</span>
-              <span class="text-purple-300 font-mono truncate block">{{ editShowModel.coverImageUrl || DEFAULT_COVER_IMAGE }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-4 mt-3 border-t border-slate-800 flex-shrink-0 flex items-center justify-end gap-3 bg-slate-900 z-10">
-        <button (click)="closeEditModal()" class="py-2.5 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-          Cancel
-        </button>
-        <button (click)="updatePodcastShow()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2">
-          <svg class="w-4 h-4 text-white flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-          <span>Save Changes</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Media Library Image Picker Modal -->
-  <div *ngIf="showMediaPickerModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
-    <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative max-h-[85vh] flex flex-col">
-      <button (click)="closeMediaPicker()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold text-lg">✕</button>
-
-      <div class="mb-5">
-        <h3 class="text-2xl font-extrabold text-white mb-1 flex items-center gap-2">
-          <svg class="w-6 h-6 text-purple-400 flex-shrink-0" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          <span>Pick Cover Image from Media Library</span>
-        </h3>
-        <p class="text-xs text-slate-400">Select an asset from your creator media repository.</p>
-      </div>
-
-      <!-- Assets List / Grid -->
-      <div class="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
-        <div *ngIf="mediaAssets().length === 0" class="text-center py-10 bg-slate-950/40 rounded-2xl border border-slate-800/80 space-y-3">
-          <p class="text-xs text-slate-400">No media assets in your repository yet.</p>
-          <button (click)="closeMediaPicker(); openUploadAssetModal()" class="btn-gradient-primary text-xs font-bold px-5 py-2.5 rounded-xl inline-flex items-center gap-2 shadow-md">
-            <svg class="w-4 h-4 text-white flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <span>Upload New Image Asset</span>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <button (click)="copyCdnUrl(activeVideoPlayerAsset()!)" class="py-2.5 px-5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+            <svg class="w-4 h-4" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 022 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 14h4m-4-4h4m-6-4h6"></path></svg>
+            <span>Copy Presigned CDN URL</span>
+          </button>
+          <button (click)="closeVideoPlayer()" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition">
+            Close Player
           </button>
         </div>
-
-        <div *ngIf="mediaAssets().length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div *ngFor="let asset of mediaAssets()" (click)="selectCoverImageFromAsset(asset)" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-purple-500/60 rounded-2xl transition cursor-pointer flex items-center gap-3 group">
-            <img [src]="asset.cdnUrl" (error)="$any($event.target).src='https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&auto=format&fit=crop&q=80'" class="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover:scale-105 transition flex-shrink-0" alt="Cover" />
-            <div class="truncate flex-1">
-              <h5 class="text-xs font-bold text-white truncate group-hover:text-purple-300 transition">{{ asset.title || asset.originalName }}</h5>
-              <span class="text-[10px] font-mono text-purple-400/90 bg-purple-500/10 px-2 py-0.5 rounded mt-1 inline-block">{{ asset.mediaType }}</span>
-            </div>
-            <span class="text-xs font-bold text-purple-400 group-hover:translate-x-0.5 transition">Select ➔</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-5 border-t border-slate-800 flex items-center justify-between">
-        <button (click)="closeMediaPicker(); openUploadAssetModal()" class="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1.5">
-          <svg class="w-4 h-4 text-purple-400 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-          <span>Upload New Asset to Library</span>
-        </button>
-        <button (click)="closeMediaPicker()" class="py-2 px-5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
-          Close
-        </button>
       </div>
     </div>
   </div>
+
+  <!-- Create Podcast Show Modal -->
+  <app-podcast-show-modal [isOpen]="showCreateModal()"
+                          [isEditMode]="false"
+                          [initialShowData]="newShow"
+                          (close)="closeCreateModal()"
+                          (save)="createPodcastShowWithData($event)"
+                          (openPicker)="openMediaPicker('create')">
+  </app-podcast-show-modal>
+
+  <!-- Edit Podcast Show Modal -->
+  <app-podcast-show-modal [isOpen]="showEditModal()"
+                          [isEditMode]="true"
+                          [initialShowData]="editShowModel"
+                          (close)="closeEditModal()"
+                          (save)="updatePodcastShowWithData($event)"
+                          (openPicker)="openMediaPicker('edit')">
+  </app-podcast-show-modal>
+
+  <!-- Media Library Image Picker Modal -->
+  <app-media-picker-modal [isOpen]="showMediaPickerModal()"
+                          [assets]="mediaAssets()"
+                          [selectedAssetId]="mediaPickerTarget() === 'create' ? newShow.coverImageUrl : editShowModel.coverImageUrl"
+                          (close)="closeMediaPicker()"
+                          (assetSelected)="selectCoverImageFromAsset($event)">
+  </app-media-picker-modal>
 
   <!-- Compact Upload Asset Modal (Used ONLY for entering new asset info) -->
   <div *ngIf="showUploadAssetModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
@@ -719,4 +649,3 @@
       </div>
     </div>
   </div>
-</div>

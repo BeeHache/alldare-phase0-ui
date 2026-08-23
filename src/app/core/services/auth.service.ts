@@ -90,6 +90,18 @@ export class AuthService {
     window.location.href = '/oauth2/authorization/google';
   }
 
+  loginAsDevCreator(): void {
+    const devUser: CreatorUser = {
+      id: DEFAULT_CREATOR_ID,
+      username: DEFAULT_USERNAME,
+      email: DEFAULT_EMAIL,
+      authorName: DEFAULT_USERNAME,
+      avatarUrl: DEFAULT_AVATAR,
+      provider: 'local'
+    };
+    this.setSession('dev-phase0-jwt-token-session', devUser);
+  }
+
   logout(): void {
     localStorage.removeItem('alldare_token');
     localStorage.removeItem('alldare_user');

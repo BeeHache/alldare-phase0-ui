@@ -28,6 +28,11 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   let token = authService.token;
 
+  // Do not attach Bearer token to S3 presigned URLs (which use S3 SigV4 query params)
+  if (req.url.includes('X-Amz-Algorithm') || (req.method === 'PUT' && req.url.includes('/alldare-media/'))) {
+    return next(req);
+  }
+
   if (token) {
     if (isTokenExpired(token)) {
       // Proactively clear expired token before dispatching request

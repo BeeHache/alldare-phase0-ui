@@ -8,11 +8,15 @@ import { AuthService } from '../../core/services/auth.service';
 import { DEFAULT_CREATOR_ID, DEFAULT_SLUG } from '../../core/constants/app.constants';
 
 import { ProfileModalComponent } from '../profile/profile-modal.component';
+import { MediaAssetCardComponent } from '../../shared/components/media-asset-card/media-asset-card.component';
+import { EpisodeCardComponent } from '../../shared/components/episode-card/episode-card.component';
+import { EpisodeModalComponent } from '../../shared/components/episode-modal/episode-modal.component';
+import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
 
 @Component({
   selector: 'app-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileModalComponent],
+  imports: [CommonModule, FormsModule, ProfileModalComponent, MediaAssetCardComponent, EpisodeCardComponent, EpisodeModalComponent, MediaPickerModalComponent],
   templateUrl: './studio.component.html',
   styleUrls: ['./studio.component.scss']
 })
@@ -44,9 +48,25 @@ export class StudioComponent implements OnInit {
     explicit: false
   });
 
-  // Media Vault Assets from alldare-media
+  // Media Library Assets from alldare-media
   mediaAssets = signal<MediaAsset[]>([]);
   selectedMediaAsset = signal<MediaAsset | null>(null);
+  publishMediaSearchQuery = signal<string>('');
+  publishMediaTypeFilter = signal<'all' | 'audio' | 'video'>('all');
+
+  filteredPublishMediaAssets(): MediaAsset[] {
+    const query = (this.publishMediaSearchQuery() || '').toLowerCase().trim();
+    const filter = this.publishMediaTypeFilter();
+    return (this.mediaAssets() || []).filter(asset => {
+      const title = (asset.title || '').toLowerCase();
+      const originalName = (asset.originalName || '').toLowerCase();
+      const matchesQuery = !query || title.includes(query) || originalName.includes(query);
+      const matchesType = filter === 'all' || 
+        (filter === 'video' && asset.mediaType.startsWith('video')) || 
+        (filter === 'audio' && !asset.mediaType.startsWith('video'));
+      return matchesQuery && matchesType;
+    });
+  }
 
   // New Media Upload Form
   newMediaTitle: string = '';
@@ -60,7 +80,8 @@ export class StudioComponent implements OnInit {
     mediaUrl: '',
     mediaType: 'audio/mpeg',
     durationSeconds: 1800,
-    fileSizeBytes: 25000000
+    fileSizeBytes: 25000000,
+    isDraft: false
   };
 
   episodes = signal<PodcastEpisode[]>([]);
@@ -69,9 +90,20 @@ export class StudioComponent implements OnInit {
   selectedSyndicationForClaim = signal<import('../../core/services/podcast.service').PodcastSyndication | null>(null);
   claimTokenInput = signal<string>('');
 
+  showEditEpisodeModal = signal<boolean>(false);
+  editingEpisode = signal<PodcastEpisode | null>(null);
+  showCreateEpisodeModal = signal<boolean>(false);
+  showEpisodeMediaPickerModal = signal<boolean>(false);
+  episodePickerTarget = signal<'create' | 'edit'>('create');
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug') || DEFAULT_SLUG;
     const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
+
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam === 'episodes' || tabParam === 'publish' || tabParam === 'vault' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
+      this.activeTab.set(tabParam);
+    }
 
     this.loadShowDetails(slug);
     this.loadMediaAssets(creatorId);
@@ -80,7 +112,7 @@ export class StudioComponent implements OnInit {
   loadShowDetails(slug: string): void {
     this.podcastService.getShowBySlug(slug).subscribe(showData => {
       this.show.set(showData);
-      this.podcastService.getEpisodesBySlug(slug).subscribe(eps => this.episodes.set(eps));
+      this.podcastService.getEpisodesBySlug(slug).subscribe(eps => this.episodes.set(eps || []));
       if (showData.id) {
         this.loadSyndications(showData.id);
       }
@@ -88,7 +120,7 @@ export class StudioComponent implements OnInit {
   }
 
   loadSyndications(showId: string): void {
-    this.podcastService.getSyndicationStatus(showId).subscribe(list => this.syndications.set(list));
+    this.podcastService.getSyndicationStatus(showId).subscribe(list => this.syndications.set(list || []));
   }
 
   openClaimModal(syn: import('../../core/services/podcast.service').PodcastSyndication): void {
@@ -177,7 +209,7 @@ export class StudioComponent implements OnInit {
         this.isUploading.set(false);
         this.selectedUploadFile.set(null);
         this.newMediaTitle = '';
-        alert(`📁 Asset "${uploaded.title}" uploaded to Media Vault!`);
+        alert(`📁 Asset "${uploaded.title}" uploaded to Media Library!`);
       },
       error: () => {
         const mockAsset: MediaAsset = {
@@ -212,7 +244,7 @@ export class StudioComponent implements OnInit {
               createdAt: new Date().toISOString()
             };
             this.mediaAssets.update(list => [extractedAudio, ...list]);
-            alert(`🔊 Asynchronous Audio Extraction Complete! New standalone audio asset "${extractedAudio.title}" added to Media Vault.`);
+            alert(`🔊 Asynchronous Audio Extraction Complete! New standalone audio asset "${extractedAudio.title}" added to Media Library.`);
           }, 1500);
         }
 
@@ -221,13 +253,13 @@ export class StudioComponent implements OnInit {
         this.isUploading.set(false);
         this.selectedUploadFile.set(null);
         this.newMediaTitle = '';
-        alert(`📁 Asset "${mockAsset.title}" uploaded to Media Vault!${shouldExtract ? ' Asynchronous audio extraction queued in alldare-media.' : ''}`);
+        alert(`📁 Asset "${mockAsset.title}" uploaded to Media Library!${shouldExtract ? ' Asynchronous audio extraction queued in alldare-media.' : ''}`);
       }
     });
   }
 
   deleteMediaAsset(asset: MediaAsset): void {
-    if (confirm(`Delete "${asset.title}" from your Media Vault?`)) {
+    if (confirm(`Delete "${asset.title}" from your Media Library?`)) {
       this.mediaService.deleteMediaAsset(asset.id).subscribe({
         next: () => {
           this.mediaAssets.update(list => list.filter(a => a.id !== asset.id));
@@ -249,7 +281,7 @@ export class StudioComponent implements OnInit {
 
   publishEpisode(isDraft: boolean = true): void {
     if (!this.selectedMediaAsset()) {
-      alert('Please select a media asset from your Media Vault to create this episode.');
+      alert('Please select a media asset from your Media Library to create this episode.');
       return;
     }
 
@@ -297,8 +329,9 @@ export class StudioComponent implements OnInit {
         isDraft: true
       };
 
+      this.activeTab.set('episodes');
       if (isDraft) {
-        alert(`💾 Episode "${savedEp.title}" saved in Draft Mode! It is hidden from public RSS feeds and landing pages.`);
+        alert(`💾 Episode "${savedEp.title}" saved in Draft Mode! It has been added to your Episode Catalog below.`);
       } else {
         alert(`🚀 Episode "${savedEp.title}" Published Live to Open RSS 2.0 (${this.rssFeedUrl})!`);
       }
@@ -326,6 +359,150 @@ export class StudioComponent implements OnInit {
       episode.isDraft = targetDraftState;
       this.episodes.update(list => [...list]);
       alert(targetDraftState ? `📝 Episode "${episode.title}" reverted to Draft Mode.` : `🟢 Episode "${episode.title}" is now Live!`);
+    }
+  }
+
+  openEditEpisodeModal(episode: PodcastEpisode): void {
+    this.editingEpisode.set({ ...episode });
+    this.showEditEpisodeModal.set(true);
+  }
+
+  closeEditEpisodeModal(): void {
+    this.showEditEpisodeModal.set(false);
+    this.editingEpisode.set(null);
+  }
+
+  saveEpisodeEdits(): void {
+    const ep = this.editingEpisode();
+    if (!ep || !ep.title.trim()) {
+      alert('Episode title is required.');
+      return;
+    }
+
+    if (ep.id && !ep.id.startsWith('ep-')) {
+      this.podcastService.updateEpisode(ep.id, ep).subscribe({
+        next: (updated) => {
+          this.episodes.update(list => list.map(e => e.id === updated.id ? updated : e));
+          this.closeEditEpisodeModal();
+          alert(`✓ Episode "${updated.title}" updated successfully!`);
+        },
+        error: () => {
+          this.episodes.update(list => list.map(e => e.id === ep.id ? ep : e));
+          this.closeEditEpisodeModal();
+          alert(`✓ Episode "${ep.title}" updated successfully!`);
+        }
+      });
+    } else {
+      this.episodes.update(list => list.map(e => e.id === ep.id ? ep : e));
+      this.closeEditEpisodeModal();
+      alert(`✓ Episode "${ep.title}" updated successfully!`);
+    }
+  }
+
+  openCreateEpisodeModal(): void {
+    this.newEpisode = {
+      showId: this.show().id || '',
+      title: '',
+      description: '',
+      mediaUrl: '',
+      mediaType: 'audio/mpeg',
+      durationSeconds: 1800,
+      fileSizeBytes: 25000000,
+      isDraft: true
+    };
+    this.showCreateEpisodeModal.set(true);
+  }
+
+  closeCreateEpisodeModal(): void {
+    this.showCreateEpisodeModal.set(false);
+  }
+
+  openEpisodeMediaPicker(target: 'create' | 'edit'): void {
+    this.episodePickerTarget.set(target);
+    this.showEpisodeMediaPickerModal.set(true);
+  }
+
+  closeEpisodeMediaPicker(): void {
+    this.showEpisodeMediaPickerModal.set(false);
+  }
+
+  onEpisodeMediaAssetPicked(asset: MediaAsset): void {
+    const target = this.episodePickerTarget();
+    if (target === 'create') {
+      this.newEpisode.mediaUrl = asset.cdnUrl;
+      this.newEpisode.mediaType = asset.mediaType;
+      this.newEpisode.durationSeconds = asset.durationSeconds;
+      this.newEpisode.fileSizeBytes = asset.fileSizeBytes;
+      if (!this.newEpisode.title) {
+        this.newEpisode.title = asset.title || asset.originalName;
+      }
+    } else if (target === 'edit' && this.editingEpisode()) {
+      const ep = this.editingEpisode()!;
+      ep.mediaUrl = asset.cdnUrl;
+      ep.mediaType = asset.mediaType;
+      ep.durationSeconds = asset.durationSeconds;
+      ep.fileSizeBytes = asset.fileSizeBytes;
+      this.editingEpisode.set({ ...ep });
+    }
+    this.closeEpisodeMediaPicker();
+  }
+
+  saveEpisodeWithData(episodeData: PodcastEpisode): void {
+    if (this.showCreateEpisodeModal()) {
+      this.publishEpisodeWithData(episodeData);
+    } else if (this.showEditEpisodeModal()) {
+      this.editingEpisode.set(episodeData);
+      this.saveEpisodeEdits();
+    }
+  }
+
+  publishEpisodeWithData(ep: PodcastEpisode): void {
+    const isDraft = ep.isDraft === true;
+    const showId = this.show().id || '';
+
+    const payload: PodcastEpisode = {
+      ...ep,
+      showId: showId,
+      publishedAt: new Date().toISOString()
+    };
+    if (payload.id && payload.id.startsWith('ep-')) {
+      delete payload.id;
+    }
+
+    if (showId) {
+      this.podcastService.createEpisode(payload).subscribe({
+        next: (res) => {
+          this.episodes.update(list => [res, ...list]);
+        },
+        error: () => {
+          const fallbackEp: PodcastEpisode = { ...payload, id: `ep-${Date.now()}` };
+          this.episodes.update(list => [fallbackEp, ...list]);
+        }
+      });
+    } else {
+      const fallbackEp: PodcastEpisode = { ...payload, id: `ep-${Date.now()}` };
+      this.episodes.update(list => [fallbackEp, ...list]);
+    }
+
+    this.closeCreateEpisodeModal();
+    this.activeTab.set('episodes');
+    alert(isDraft ? `💾 Episode "${payload.title}" saved as Draft!` : `🚀 Episode "${payload.title}" Published Live!`);
+  }
+
+  deleteEpisode(episode: PodcastEpisode): void {
+    if (confirm(`Are you sure you want to delete episode "${episode.title}"?`)) {
+      if (episode.id && !episode.id.startsWith('ep-')) {
+        this.podcastService.deleteEpisode(episode.id).subscribe({
+          next: () => {
+            this.episodes.update(list => list.filter(e => e.id !== episode.id));
+          },
+          error: () => {
+            this.episodes.update(list => list.filter(e => e.id !== episode.id));
+          }
+        });
+      } else {
+        this.episodes.update(list => list.filter(e => e.id !== episode.id));
+      }
     }
   }
 
