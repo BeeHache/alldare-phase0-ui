@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PodcastService, PodcastShow } from '../../core/services/podcast.service';
 import { MediaService, MediaAsset } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -14,12 +14,12 @@ import { MediaPickerModalComponent } from '../../shared/components/media-picker-
 @Component({
   selector: 'app-podcast-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileModalComponent, PodcastShowModalComponent, MediaPickerModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ProfileModalComponent, PodcastShowModalComponent, MediaPickerModalComponent],
   templateUrl: './podcast-list.component.html',
   styleUrls: ['./podcast-list.component.scss']
 })
 export class PodcastListComponent implements OnInit {
-  private podcastService = inject(PodcastService);
+  public podcastService = inject(PodcastService);
   private mediaService = inject(MediaService);
   private postService = inject(PostService);
   private router = inject(Router);
@@ -609,11 +609,11 @@ export class PodcastListComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  getRssUrl(slug: string): string {
-    return this.podcastService.getRssFeedUrl(slug);
+  getRssUrl(slug?: string): string {
+    return this.podcastService.getRssFeedUrl(slug || '');
   }
 
-  getWebUrl(slug: string): string {
-    return this.podcastService.getWebLandingPageUrl(slug);
+  getWebUrl(slug?: string): string {
+    return this.podcastService.getWebLandingPageUrl(slug || '');
   }
 }

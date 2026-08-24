@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
   <!-- Responsive Mobile & Desktop Top Navigation Header -->
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 shadow-lg">
-    <div class="max-w-6xl mx-auto w-full flex items-center justify-between">
+    <div class="max-w-[1400px] mx-auto w-full flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-purple-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 border border-purple-400/30 flex-shrink-0">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -9,8 +9,8 @@
           </svg>
         </div>
         <div>
-          <h1 class="font-extrabold text-base sm:text-lg text-white leading-none">Alldare Content Publisher</h1>
-          <p class="text-xs text-slate-400 mt-1">Social Feed & Open Podcast Engine</p>
+          <h1 class="font-black text-base sm:text-lg bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-purple-200 leading-none">Alldare Content Publisher</h1>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Social Feed & Open Podcast Engine</p>
         </div>
       </div>
 
@@ -31,7 +31,7 @@
   <app-profile-modal [isOpen]="showProfileModal()" (closeEvent)="showProfileModal.set(false)"></app-profile-modal>
 
   <!-- Dashboard Main Content -->
-  <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
+  <main class="flex-1 max-w-[1400px] mx-auto w-full px-6 py-8">
     
     <!-- Navigation Tabs (Mobile Horizontally Scrollable / Desktop Centered) -->
     <div class="flex items-center justify-start sm:justify-center gap-3 mb-8 border-b border-slate-800 pb-4 overflow-x-auto no-scrollbar">
@@ -158,8 +158,8 @@
 
         <div class="flex items-center gap-3 flex-1 max-w-2xl">
           <div class="relative w-full">
-            <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" [(ngModel)]="podcastSearchQuery" placeholder="Search podcast show title or category..." class="w-full h-12 bg-slate-950 border border-slate-700/80 text-slate-100 placeholder-slate-400 text-sm rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-purple-500 transition font-medium shadow-inner" />
+            <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" [(ngModel)]="podcastSearchQuery" placeholder="Search podcast show title or category..." class="w-full h-12 bg-slate-950 border border-slate-700/80 text-slate-100 placeholder-slate-400 text-sm rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:border-purple-500 transition font-medium shadow-inner" />
           </div>
 
           <button (click)="openCreateModal()" type="button" class="h-12 px-5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 whitespace-nowrap transition flex-shrink-0">
@@ -171,9 +171,9 @@
         </div>
       </div>
 
-      <!-- Grid Cards (Standard Capped Card Width max-w-md) -->
-      <div class="flex flex-wrap gap-6 items-stretch">
-        <div *ngFor="let s of filteredShows()" class="w-full sm:w-[420px] max-w-md bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
+      <!-- Responsive Widescreen Grid Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+        <div *ngFor="let s of filteredShows()" class="w-full bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 backdrop-blur-sm shadow-xl transition flex flex-col justify-between group">
           
           <div>
             <!-- Show Header & Cover Image -->
@@ -199,44 +199,44 @@
                     <span>{{ s.isPublic !== false ? 'Public' : 'Private' }}</span>
                   </button>
                 </div>
-                <h4 class="text-lg font-black text-white leading-snug group-hover:text-purple-300 transition truncate">{{ s.title }}</h4>
-                <p class="text-xs text-slate-400 font-medium mt-1 truncate">{{ s.category }} • By {{ s.authorName }}</p>
+                <h4 class="text-xl font-black text-white leading-snug group-hover:text-purple-300 transition truncate">{{ s.title }}</h4>
+                <p class="text-xs text-slate-400 font-medium mt-1 truncate">{{ s.category }} • By {{ s.authorName || s.username }}</p>
               </div>
             </div>
 
-            <p class="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-3">
-              {{ s.description }}
-            </p>
+            <p class="text-xs text-slate-400 leading-relaxed mb-5 line-clamp-2">{{ s.description || 'No show description provided.' }}</p>
 
-            <!-- Syndication Endpoints Box -->
+            <!-- Syndication Feeds Links Information Box -->
             <div class="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-4 space-y-3 mb-6">
               <div>
                 <div class="text-[10px] font-mono font-bold text-slate-500 tracking-wider mb-1">
                   RSS 2.0 SYNDICATION FEED
                 </div>
-                <a [href]="getRssUrl(s.slug || '')" target="_blank" title="Click to open RSS 2.0 feed" class="text-xs font-mono text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/40 px-3 py-1.5 rounded-xl block truncate transition select-all">
-                  /{{ s.slug }}/rss.xml ↗
+                <a [href]="getRssUrl(s.slug)" target="_blank" class="text-xs font-mono text-purple-400 hover:text-purple-300 underline truncate flex items-center gap-1 font-semibold">
+                  <span>{{ getRssUrl(s.slug) }}</span>
+                  <svg class="w-3 h-3 opacity-70 flex-shrink-0" style="width: 12px; height: 12px; min-width: 12px; min-height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
               </div>
 
-              <div>
+              <div class="pt-2 border-t border-slate-800/60">
                 <div class="text-[10px] font-mono font-bold text-slate-500 tracking-wider mb-1">
                   WEB LANDING PAGE
                 </div>
-                <a [href]="getWebUrl(s.slug || '')" target="_blank" title="Click to open web landing page" class="text-xs font-mono text-pink-300 hover:text-pink-200 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 hover:border-pink-500/40 px-3 py-1.5 rounded-xl block truncate transition select-all">
-                  /{{ s.slug }}/index.html ↗
+                <a [href]="getWebUrl(s.slug)" target="_blank" class="text-xs font-mono text-pink-400 hover:text-pink-300 underline truncate flex items-center gap-1 font-semibold">
+                  <span>{{ getWebUrl(s.slug) }}</span>
+                  <svg class="w-3 h-3 opacity-70 flex-shrink-0" style="width: 12px; height: 12px; min-width: 12px; min-height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
               </div>
             </div>
           </div>
 
-          <!-- Actions -->
+          <!-- Actions Bar -->
           <div class="flex items-center gap-2 pt-4 border-t border-slate-800/80">
-            <button type="button" (click)="manageShow(s)" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <a [routerLink]="['/studio', s.slug]" class="flex-1 py-2.5 px-4 rounded-xl btn-gradient-primary font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5">
               <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
               <span>Manage & Episodes</span>
-            </button>
-            <button type="button" (click)="openEditModal(s, $event)" title="Edit Podcast Details" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-purple-900/40 text-slate-300 hover:text-purple-300 border border-slate-700 transition text-xs font-semibold flex items-center gap-1">
+            </a>
+            <button type="button" (click)="openEditModal(s)" title="Edit Podcast Show Settings" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition text-xs font-semibold flex items-center gap-1">
               <svg class="w-3.5 h-3.5 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
               <span>Edit</span>
             </button>
@@ -247,14 +247,13 @@
         </div>
 
         <!-- Dashed Add Channel Placeholder Card -->
-        <div (click)="openCreateModal()" class="w-full sm:w-[280px] max-w-md bg-slate-900/20 border-2 border-dashed border-slate-800 hover:border-purple-500/50 hover:bg-purple-500/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg transition flex flex-col items-center justify-center text-center cursor-pointer group min-h-[380px] space-y-3">
+        <div (click)="openCreateModal()" class="w-full bg-slate-900/20 border-2 border-dashed border-slate-800 hover:border-purple-500/60 hover:bg-slate-900/60 rounded-3xl p-6 backdrop-blur-sm shadow-lg hover:shadow-purple-500/10 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[380px] space-y-3">
           <div class="h-14 w-14 rounded-2xl bg-slate-800/80 group-hover:bg-purple-600/20 border border-slate-700 group-hover:border-purple-500/40 flex items-center justify-center text-purple-400 transition">
             <svg class="w-7 h-7 flex-shrink-0" style="width: 28px; height: 28px; min-width: 28px; min-height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
           </div>
           <div>
             <h5 class="text-sm font-bold text-slate-300 group-hover:text-white transition">Create New Channel</h5>
             <p class="text-xs text-slate-500 mt-1 max-w-[200px] leading-relaxed">Launch another RSS 2.0 podcast or vodcast series</p>
-          </div>
         </div>
       </div>
     </div>
