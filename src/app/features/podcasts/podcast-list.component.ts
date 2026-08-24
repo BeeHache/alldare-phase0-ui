@@ -173,8 +173,14 @@ export class PodcastListComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
-    const username = this.authService.currentUser()?.username || DEFAULT_USERNAME;
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const creatorId = user.id;
+    const username = user.username;
 
     this.newShow.creatorId = creatorId;
     this.newShow.username = username;
@@ -264,8 +270,14 @@ export class PodcastListComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
-    const username = this.authService.currentUser()?.username || DEFAULT_USERNAME;
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const creatorId = user.id;
+    const username = user.username;
     this.newShow = {
       creatorId: creatorId,
       username: username,
@@ -274,7 +286,7 @@ export class PodcastListComponent implements OnInit {
       description: '',
       category: 'Technology',
       authorName: username,
-      email: DEFAULT_EMAIL,
+      email: user.email || '',
       coverImageUrl: '',
       explicit: false
     };

@@ -41,18 +41,19 @@ export class AuthService {
   private checkUrlForToken(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-    const username = urlParams.get('username') || DEFAULT_USERNAME;
-    const email = urlParams.get('email') || `${username}@alldare.online`;
+    const username = urlParams.get('username');
+    const userId = urlParams.get('userId');
+    const email = urlParams.get('email') || (username ? `${username}@alldare.online` : '');
     const provider = (urlParams.get('provider') as 'github' | 'google') || 'github';
     const avatarFromParam = urlParams.get('avatarUrl');
 
     const avatarUrl = (avatarFromParam && avatarFromParam !== 'null' && avatarFromParam !== 'undefined')
       ? avatarFromParam
-      : (provider === 'github' ? `https://github.com/${username}.png` : DEFAULT_AVATAR);
+      : (provider === 'github' && username ? `https://github.com/${username}.png` : DEFAULT_AVATAR);
 
-    if (token) {
+    if (token && userId && username) {
       this.setSession(token, {
-        id: urlParams.get('userId') || DEFAULT_CREATOR_ID,
+        id: userId,
         username: username,
         email: email,
         authorName: username,

@@ -97,8 +97,14 @@ export class StudioComponent implements OnInit {
   episodePickerTarget = signal<'create' | 'edit'>('create');
 
   ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const slug = this.route.snapshot.paramMap.get('slug') || DEFAULT_SLUG;
-    const creatorId = this.authService.currentUser()?.id || DEFAULT_CREATOR_ID;
+    const creatorId = user.id;
 
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
     if (tabParam === 'episodes' || tabParam === 'publish' || tabParam === 'vault' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
