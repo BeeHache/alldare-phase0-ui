@@ -15,12 +15,12 @@ import { AuthService } from '../../core/services/auth.service';
 
         <!-- Fixed Header -->
         <div class="flex items-center gap-4 flex-shrink-0 pb-3">
-          <img [src]="profile().avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="56" height="56" style="width: 56px; height: 56px; min-width: 56px; min-height: 56px;" class="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-purple-500/60 shadow-lg object-cover flex-shrink-0" alt="Avatar" />
+          <img [src]="profile()?.avatarUrl" width="56" height="56" style="width: 56px; height: 56px; min-width: 56px; min-height: 56px;" class="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-purple-500/60 shadow-lg object-cover flex-shrink-0" alt="Avatar" />
           <div class="min-w-0 flex-1">
-            <h3 class="text-2xl font-black text-white leading-tight truncate">{{ profile().displayName || profile().username }}</h3>
-            <p class="text-sm font-mono text-purple-400 mt-0.5 truncate">&#64;{{ profile().username }}</p>
+            <h3 class="text-2xl font-black text-white leading-tight truncate">{{ profile()?.displayName || profile()?.username }}</h3>
+            <p class="text-sm font-mono text-purple-400 mt-0.5 truncate">&#64;{{ profile()?.username }}</p>
             <span class="inline-block mt-1 px-2 py-0.5 rounded-md text-xs uppercase font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
-              {{ profile().provider }} OAuth Authenticated
+              {{ profile()?.provider }} OAuth Authenticated
             </span>
           </div>
         </div>
@@ -107,15 +107,15 @@ export class ProfileModalComponent implements OnInit {
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
 
-  profile = signal<UserProfile>({
-    id: '00000000-0000-0000-0000-000000000001',
-    username: 'creator',
-    displayName: 'Alldare Creator',
-    email: 'creator@alldare.online',
-    provider: 'github'
-  });
+  profile = signal<UserProfile | null>(null);
 
-  editableProfile: UserProfile = { ...this.profile() };
+  editableProfile: UserProfile = {
+    id: '',
+    username: '',
+    displayName: '',
+    email: '',
+    provider: 'local'
+  };
 
   socialTargets = signal<Array<{ key: string; name: string; colorClass: string; path: string; connected: boolean; handle?: string }>>([
     { key: 'TWITTER', name: 'Twitter / X', colorClass: 'bg-sky-500/15 text-sky-400 border-sky-500/30', path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z', connected: true, handle: '@BeeHache' },
@@ -137,14 +137,12 @@ export class ProfileModalComponent implements OnInit {
 
   ngOnInit(): void {
     const user = this.authService.currentUser();
-    const userId = user?.id || '00000000-0000-0000-0000-000000000001';
+    if (!user) return;
 
-    this.profileService.getProfile(userId).subscribe(p => {
-      if (user) {
-        p.username = user.username;
-        p.email = user.email;
-        p.avatarUrl = user.avatarUrl || p.avatarUrl;
-      }
+    this.profileService.getProfile(user.id).subscribe(p => {
+      p.username = user.username;
+      p.email = user.email;
+      p.avatarUrl = user.avatarUrl || p.avatarUrl;
       this.profile.set(p);
       this.editableProfile = { ...p };
     });

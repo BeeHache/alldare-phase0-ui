@@ -136,16 +136,23 @@ export class PodcastService {
     );
   }
 
+  private getBaseUrl(): string {
+    if (typeof window !== 'undefined' && window.location.hostname.endsWith('.local')) {
+      return `${window.location.protocol}//podcasts.${window.location.hostname}`;
+    }
+    return this.podcastUrl;
+  }
+
   getRssFeedUrl(slug: string): string {
-    return `${this.podcastUrl}/${slug}/rss.xml`;
+    return `${this.getBaseUrl()}/${slug}/rss.xml`;
   }
 
   getAtomFeedUrl(slug: string): string {
-    return `${this.podcastUrl}/${slug}/atom.xml`;
+    return `${this.getBaseUrl()}/${slug}/atom.xml`;
   }
 
   getWebLandingPageUrl(slug: string): string {
-    return `${this.podcastUrl}/${slug}/index.html`;
+    return `${this.getBaseUrl()}/${slug}/index.html`;
   }
 
   getSyndicationStatus(showId: string): Observable<PodcastSyndication[]> {

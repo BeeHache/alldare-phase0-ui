@@ -12,11 +12,21 @@ import { MediaAssetCardComponent } from '../../shared/components/media-asset-car
 import { EpisodeCardComponent } from '../../shared/components/episode-card/episode-card.component';
 import { EpisodeModalComponent } from '../../shared/components/episode-modal/episode-modal.component';
 import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
+import { AppHeaderComponent } from '../../shared/components/app-header/app-header.component';
 
 @Component({
   selector: 'app-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileModalComponent, MediaAssetCardComponent, EpisodeCardComponent, EpisodeModalComponent, MediaPickerModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ProfileModalComponent, 
+    MediaAssetCardComponent, 
+    EpisodeCardComponent, 
+    EpisodeModalComponent, 
+    MediaPickerModalComponent,
+    AppHeaderComponent
+  ],
   templateUrl: './studio.component.html',
   styleUrls: ['./studio.component.scss']
 })

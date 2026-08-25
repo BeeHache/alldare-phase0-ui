@@ -10,11 +10,24 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_COVER_IMAGE } from '../../core/constants/app.constants';
 import { PodcastShowModalComponent } from '../../shared/components/podcast-show-modal/podcast-show-modal.component';
 import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
+import { AppHeaderComponent } from '../../shared/components/app-header/app-header.component';
+import { VideoPlayerModalComponent } from '../../shared/components/video-player-modal/video-player-modal.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-podcast-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ProfileModalComponent, PodcastShowModalComponent, MediaPickerModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterLink, 
+    ProfileModalComponent, 
+    PodcastShowModalComponent, 
+    MediaPickerModalComponent,
+    AppHeaderComponent,
+    VideoPlayerModalComponent,
+    EmptyStateComponent
+  ],
   templateUrl: './podcast-list.component.html',
   styleUrls: ['./podcast-list.component.scss']
 })
@@ -24,6 +37,10 @@ export class PodcastListComponent implements OnInit {
   private postService = inject(PostService);
   private router = inject(Router);
   public authService = inject(AuthService);
+
+  public get currentOrigin(): string {
+    return window.location.origin;
+  }
 
   activeDashboardTab = signal<'social' | 'podcasts' | 'vault'>('podcasts');
   shows = signal<PodcastShow[]>([]);
@@ -60,6 +77,10 @@ export class PodcastListComponent implements OnInit {
   resetMediaFilters(): void {
     this.mediaSearchQuery.set('');
     this.mediaTypeFilter.set('all');
+  }
+
+  resetSocialFilters(): void {
+    this.postSearchQuery.set('');
   }
 
   toggleAudioPreview(asset: MediaAsset): void {
@@ -220,8 +241,14 @@ export class PodcastListComponent implements OnInit {
       return;
     }
 
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
-    const username = this.authService.currentUser()?.username || 'creator';
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const creatorId = user.id;
+    const username = user.username;
 
     const targets: string[] = [];
     if (this.crossPostTwitter()) targets.push('Twitter/X');
@@ -298,11 +325,39 @@ export class PodcastListComponent implements OnInit {
   }
 
   openMediaLibraryModal(): void {
-    this.activeDashboardTab.set('vault');
+    this.showUploadAssetModal.set(true);
   }
 
   closeMediaLibraryModal(): void {
     this.showUploadAssetModal.set(false);
+  }
+
+  isDraggingFile = signal<boolean>(false);
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingFile.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingFile.set(false);
+  }
+
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingFile.set(false);
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      this.selectedUploadFile.set(file);
+      this.newMediaTitle = file.name.replace(/\.[^/.]+$/, "");
+      this.uploadToMediaLibrary();
+    }
   }
 
   onMediaFileSelected(event: Event): void {
@@ -313,6 +368,7 @@ export class PodcastListComponent implements OnInit {
       if (!this.newMediaTitle) {
         this.newMediaTitle = file.name.replace(/\.[^/.]+$/, "");
       }
+      this.uploadToMediaLibrary();
     }
   }
 
@@ -323,8 +379,15 @@ export class PodcastListComponent implements OnInit {
       return;
     }
 
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.isUploading.set(false);
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.isUploading.set(true);
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
+    const creatorId = user.id;
     const shouldExtract = this.extractAudio();
 
     this.mediaService.uploadMediaAsset(file, this.newMediaTitle, shouldExtract).subscribe({
@@ -587,18 +650,21 @@ export class PodcastListComponent implements OnInit {
   }
 
   resetForm(): void {
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
-    const username = this.authService.currentUser()?.username || 'creator';
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     this.newShow = {
-      creatorId: creatorId,
-      username: username,
+      creatorId: user.id,
+      username: user.username,
       slug: '',
       title: '',
       description: '',
       category: 'Technology',
-      authorName: username,
-      email: 'creator@alldare.online',
+      authorName: user.username,
+      email: user.email || '',
       coverImageUrl: '',
       explicit: false
     };

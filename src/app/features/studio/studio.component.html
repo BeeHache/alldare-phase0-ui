@@ -1,50 +1,22 @@
 <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-  <!-- Top Navigation Header (Consistent with Podcast Channels page) -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 shadow-lg">
-    <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button (click)="backToPodcasts()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 flex items-center gap-1.5 shadow-sm">
-          <span>← Back to My Podcasts</span>
-        </button>
-
-        <div class="h-8 w-px bg-slate-800 mx-1"></div>
-
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 border border-purple-400/30 flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-          </div>
-          <div>
-            <h1 class="font-extrabold text-base sm:text-lg text-white leading-none">{{ show().title }}</h1>
-            <p class="text-xs font-mono text-purple-400 mt-1">/podcast/{{ show().slug }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <!-- Syndication Quick Actions Group -->
-        <div class="hidden sm:flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 p-1 rounded-xl">
-          <a [href]="'/podcast/' + (show().slug || 'mychannel') + '/index.html'" target="_blank" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5">
-            <span>View Web Page ↗</span>
-          </a>
-          <button (click)="copyRssLink()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition">
-            {{ copiedRss() ? '✓ RSS Copied!' : 'Copy RSS Feed' }}
-          </button>
-        </div>
-
-        <div class="hidden sm:block h-6 w-px bg-slate-800"></div>
-
-        <!-- Authenticated Creator Profile Badge & Logout (Matches podcast-list header) -->
-        <div (click)="showProfileModal.set(true)" class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3.5 py-2 rounded-xl cursor-pointer transition shadow-sm">
-          <img [src]="authService.currentUser()?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator'" width="22" height="22" class="avatar-badge bg-slate-700 rounded-full" alt="Avatar" />
-          <span class="text-xs font-bold text-purple-300">&#64;{{ authService.currentUser()?.username || 'creator' }}</span>
-        </div>
-
-        <button (click)="logout()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
-          Log Out
-        </button>
-      </div>
+  <app-header 
+    [title]="show().title || 'Studio Publisher'" 
+    badgeText="Studio" 
+    [subtitle]="'/podcast/' + (show().slug || 'mychannel')" 
+    (openProfile)="showProfileModal.set(true)" 
+    (logout)="logout()">
+    <button (click)="backToPodcasts()" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 flex items-center gap-1.5 shadow-sm mr-2">
+      <span>← Back to My Podcasts</span>
+    </button>
+    <div class="hidden sm:flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 p-1 rounded-xl mr-2">
+      <a [href]="'/podcast/' + (show().slug || 'mychannel') + '/index.html'" target="_blank" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5">
+        <span>View Web Page ↗</span>
+      </a>
+      <button (click)="copyRssLink()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition">
+        {{ copiedRss() ? '✓ RSS Copied!' : 'Copy RSS Feed' }}
+      </button>
     </div>
-  </header>
+  </app-header>
 
   <app-profile-modal [isOpen]="showProfileModal()" (closeEvent)="showProfileModal.set(false)"></app-profile-modal>
 
@@ -59,11 +31,7 @@
         <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         <span>Publish Episode</span>
       </button>
-      <button (click)="activeTab.set('vault')" [class]="activeTab() === 'vault' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
-        <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-        <span>Media Library</span>
-        <span class="px-2 py-0.5 bg-slate-950/60 text-purple-300 rounded-full text-[10px] font-mono">{{ mediaAssets().length }}</span>
-      </button>
+
       <button (click)="activeTab.set('slideshow')" [class]="activeTab() === 'slideshow' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 flex-shrink-0">
         <svg class="w-4 h-4 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
         <span>Slideshow Vodcast Builder</span>
@@ -294,77 +262,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: MEDIA LIBRARY (Upload Raw Audio/Video) -->
-    <div *ngIf="activeTab() === 'vault'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-xl">
-        <h2 class="text-xl font-bold text-white mb-2">Media Library</h2>
-        <p class="text-slate-400 text-xs mb-6">Upload raw audio and video files to your media repository before attaching them to podcast episodes.</p>
 
-        <!-- Upload Container -->
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-8 space-y-4">
-          <h3 class="text-sm font-bold text-white">Upload New Asset</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Asset Title / Label</label>
-              <input type="text" [(ngModel)]="newMediaTitle" placeholder="e.g. Master Audio Episode 101" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Select File (.mp3, .flac, .wav, .mp4, .mov)</label>
-              <input type="file" (change)="onMediaFileSelected($event)" accept="audio/*,video/*" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2 text-xs text-slate-300 cursor-pointer focus:outline-none focus:border-purple-500 transition" />
-            </div>
-          </div>
-
-          <!-- Async Audio Track Extraction Toggle -->
-          <div class="p-4 bg-purple-950/40 border border-purple-800/40 rounded-xl flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="h-8 w-8 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 flex-shrink-0">
-                <svg class="w-4 h-4 text-purple-300 flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                </svg>
-              </div>
-              <div>
-                <h5 class="text-xs font-bold text-white leading-tight">Extract & Copy Audio Track Asynchronously</h5>
-                <p class="text-[11px] text-slate-400 mt-0.5">Automatically extracts the audio stream from video files (.mp4, .mov) and stores it as a standalone .mp3 asset in your Media Library.</p>
-              </div>
-            </div>
-            <label class="flex items-center gap-2 cursor-pointer flex-shrink-0">
-              <input type="checkbox" [ngModel]="extractAudio()" (ngModelChange)="extractAudio.set($event)" class="accent-purple-600 w-4 h-4 rounded cursor-pointer" />
-              <span class="text-xs font-semibold text-purple-300">Enable</span>
-            </label>
-          </div>
-
-          <button (click)="uploadToMediaVault()" [disabled]="isUploading() || !selectedUploadFile()" class="btn-gradient-primary px-6 py-2.5 rounded-xl font-bold text-xs transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
-            <svg class="w-4 h-4 text-white flex-shrink-0" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <span>{{ isUploading() ? 'Processing Asset...' : 'Upload Asset to Media Library' }}</span>
-          </button>
-        </div>
-
-        <!-- Vault Assets Grid -->
-        <h3 class="text-sm font-bold text-white mb-3">Stored Media Assets ({{ mediaAssets().length }})</h3>
-        <div class="space-y-3">
-          <div *ngFor="let asset of mediaAssets()" class="bg-slate-950 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-4 transition">
-            <div class="flex items-center gap-3">
-              <div class="flex-shrink-0">
-                <svg *ngIf="asset.mediaType.startsWith('video')" class="w-5 h-5 text-purple-400 flex-shrink-0" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                <svg *ngIf="!asset.mediaType.startsWith('video')" class="w-5 h-5 text-purple-400 flex-shrink-0" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white">{{ asset.title || asset.originalName }}</h4>
-                <p class="text-xs font-mono text-purple-400 mt-0.5">{{ asset.cdnUrl }}</p>
-                <p class="text-[11px] text-slate-500 font-mono mt-1">
-                  {{ asset.mediaType }} • {{ asset.durationSeconds / 60 | number:'1.0-0' }} mins • Status: {{ asset.status }}
-                </p>
-              </div>
-            </div>
-
-            <button (click)="deleteMediaAsset(asset)" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
-              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              <span>Delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- TAB 3: SHOW SETTINGS -->
     <div *ngIf="activeTab() === 'show'" class="space-y-6">

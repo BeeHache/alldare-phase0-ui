@@ -39,6 +39,26 @@ export class MediaService {
   private authService = inject(AuthService);
   private baseUrl = '/api/v1/media';
 
+  private formatCdnUrl(url: string): string {
+    if (!url) return '';
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+    const hostname = typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? window.location.hostname : 'alldare.local';
+    const targetCdn = `${protocol}//cdn.${hostname.replace(/^cdn\./, '')}`;
+
+    let cleanPath = url
+      .replace(/^https?:\/\/[^\/]+\/alldare-media\//, '/')
+      .replace(/^https?:\/\/cdn\.[^\/]+\//, '/')
+      .replace(/^https?:\/\/localhost:\d+\//, '/')
+      .replace(/^https?:\/\/127\.0\.0\.1:\d+\//, '/')
+      .replace(/^https?:\/\/minio:\d+\//, '/');
+
+    if (!cleanPath.startsWith('/')) {
+      cleanPath = '/' + cleanPath;
+    }
+
+    return `${targetCdn}${cleanPath}`;
+  }
+
   getMediaAssets(creatorId: string): Observable<MediaAsset[]> {
     return this.http.get<any[]>('/api/v1/storage/my-media').pipe(
       map(items => (items || []).map(item => {
@@ -52,13 +72,16 @@ export class MediaService {
           cleanName = `Media Asset (${shortId}${ext})`;
         }
 
+        const rawDownload = item.downloadUrl || `http://cdn.alldare.local/${item.s3Key}`;
+        const cdnUrl = this.formatCdnUrl(rawDownload);
+
         return {
           id: item.id,
           creatorId: creatorId,
           filename: item.s3Key,
           originalName: cleanName,
           title: cleanName,
-          cdnUrl: item.downloadUrl || `http://cdn.alldare.local/${item.s3Key}`,
+          cdnUrl: cdnUrl,
           mediaType: item.contentType || 'application/octet-stream',
           durationSeconds: 180,
           fileSizeBytes: 0,
@@ -80,17 +103,22 @@ export class MediaService {
 
     return this.http.get<{ uploadUrl?: string, url?: string, fileName: string }>(storageUrl).pipe(
       switchMap(res => {
-        const targetUrl = res?.uploadUrl || res?.url;
+        let targetUrl = res?.uploadUrl || res?.url;
         if (!res || !targetUrl) {
           throw new Error('Invalid presigned URL response from storage service');
         }
+
+        // Match current protocol (https/http) to prevent Mixed Content errors
+        targetUrl = this.formatCdnUrl(targetUrl);
+
         return this.http.put(targetUrl, file, {
           headers: { 'Content-Type': contentType },
           responseType: 'text'
         }).pipe(
           map(() => {
             const timestamp = Date.now();
-            const cdnUrl = targetUrl.split('?')[0];
+            const rawCdn = targetUrl.split('?')[0];
+            const cdnUrl = this.formatCdnUrl(rawCdn);
             return {
               id: `asset-${timestamp}`,
               creatorId: authorId,
@@ -117,7 +145,7 @@ export class MediaService {
           filename: fallbackKey,
           originalName: file.name,
           title: title || file.name,
-          cdnUrl: `http://localhost:9000/alldare-media/${fallbackKey}`,
+          cdnUrl: this.formatCdnUrl(`/${fallbackKey}`),
           mediaType: contentType,
           durationSeconds: 180,
           fileSizeBytes: file.size,

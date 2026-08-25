@@ -27,21 +27,7 @@ export class ProfileService {
   getProfile(idOrUsername: string): Observable<UserProfile> {
     const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrUsername);
     const targetUrl = isUuid ? `${this.baseUrl}/id/${idOrUsername}` : `${this.baseUrl}/${idOrUsername}`;
-    return this.http.get<UserProfile>(targetUrl).pipe(
-      catchError(() => of({
-        id: idOrUsername,
-        username: 'creator',
-        displayName: 'Alldare Creator',
-        email: 'creator@alldare.online',
-        bio: 'Podcast host, video creator, and decentralized publishing pioneer on Alldare.',
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=creator',
-        websiteUrl: 'https://alldare.online',
-        twitterHandle: '@alldare_creator',
-        youtubeUrl: 'https://youtube.com/@alldare',
-        provider: 'github' as const,
-        createdAt: new Date().toISOString()
-      }))
-    );
+    return this.http.get<UserProfile>(targetUrl);
   }
 
   updateProfile(profile: UserProfile): Observable<UserProfile> {
