@@ -24,6 +24,8 @@ export interface PodcastShow {
 export interface PodcastEpisode {
   id?: string;
   showId: string;
+  authorId?: string;
+  slug?: string;
   title: string;
   description: string;
   mediaUrl: string;

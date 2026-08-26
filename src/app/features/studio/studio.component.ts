@@ -8,7 +8,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { DEFAULT_CREATOR_ID, DEFAULT_SLUG } from '../../core/constants/app.constants';
 
 import { ProfileModalComponent } from '../profile/profile-modal.component';
-import { MediaAssetCardComponent } from '../../shared/components/media-asset-card/media-asset-card.component';
 import { EpisodeCardComponent } from '../../shared/components/episode-card/episode-card.component';
 import { EpisodeModalComponent } from '../../shared/components/episode-modal/episode-modal.component';
 import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
@@ -21,7 +20,6 @@ import { AppHeaderComponent } from '../../shared/components/app-header/app-heade
     CommonModule, 
     FormsModule, 
     ProfileModalComponent, 
-    MediaAssetCardComponent, 
     EpisodeCardComponent, 
     EpisodeModalComponent, 
     MediaPickerModalComponent,
@@ -37,7 +35,7 @@ export class StudioComponent implements OnInit {
   private router = inject(Router);
   public authService = inject(AuthService);
 
-  activeTab = signal<'publish' | 'vault' | 'slideshow' | 'show' | 'episodes' | 'monetization'>('publish');
+  activeTab = signal<'episodes' | 'slideshow' | 'show' | 'monetization'>('episodes');
   isUploading = signal<boolean>(false);
   isCreatorProSubscribed = signal<boolean>(false);
   copiedRss = signal<boolean>(false);
@@ -88,9 +86,9 @@ export class StudioComponent implements OnInit {
     title: '',
     description: '',
     mediaUrl: '',
-    mediaType: 'audio/mpeg',
-    durationSeconds: 1800,
-    fileSizeBytes: 25000000,
+    mediaType: '',
+    durationSeconds: 0,
+    fileSizeBytes: 0,
     isDraft: false
   };
 
@@ -117,7 +115,7 @@ export class StudioComponent implements OnInit {
     const creatorId = user.id;
 
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
-    if (tabParam === 'episodes' || tabParam === 'publish' || tabParam === 'vault' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
+    if (tabParam === 'episodes' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
       this.activeTab.set(tabParam);
     }
 
@@ -215,7 +213,7 @@ export class StudioComponent implements OnInit {
     }
 
     this.isUploading.set(true);
-    const creatorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
+    const creatorId = this.authService.currentUser()?.id || '';
     const shouldExtract = this.extractAudio();
 
     this.mediaService.uploadMediaAsset(file, this.newMediaTitle, shouldExtract).subscribe({
@@ -339,9 +337,9 @@ export class StudioComponent implements OnInit {
         title: '',
         description: '',
         mediaUrl: '',
-        mediaType: 'audio/mpeg',
-        durationSeconds: 1800,
-        fileSizeBytes: 25000000,
+        mediaType: '',
+        durationSeconds: 0,
+        fileSizeBytes: 0,
         isDraft: true
       };
 
@@ -421,9 +419,9 @@ export class StudioComponent implements OnInit {
       title: '',
       description: '',
       mediaUrl: '',
-      mediaType: 'audio/mpeg',
-      durationSeconds: 1800,
-      fileSizeBytes: 25000000,
+      mediaType: '',
+      durationSeconds: 0,
+      fileSizeBytes: 0,
       isDraft: true
     };
     this.showCreateEpisodeModal.set(true);
@@ -474,10 +472,16 @@ export class StudioComponent implements OnInit {
 
   publishEpisodeWithData(ep: PodcastEpisode): void {
     const isDraft = ep.isDraft === true;
-    const showId = this.show().id || '';
+    let showId = this.show().id || '';
+    if (showId.startsWith('show-')) {
+      showId = '';
+    }
+
+    const authorId = this.authService.currentUser()?.id;
 
     const payload: PodcastEpisode = {
       ...ep,
+      authorId: authorId,
       showId: showId,
       publishedAt: new Date().toISOString()
     };
@@ -485,20 +489,15 @@ export class StudioComponent implements OnInit {
       delete payload.id;
     }
 
-    if (showId) {
-      this.podcastService.createEpisode(payload).subscribe({
-        next: (res) => {
-          this.episodes.update(list => [res, ...list]);
-        },
-        error: () => {
-          const fallbackEp: PodcastEpisode = { ...payload, id: `ep-${Date.now()}` };
-          this.episodes.update(list => [fallbackEp, ...list]);
-        }
-      });
-    } else {
-      const fallbackEp: PodcastEpisode = { ...payload, id: `ep-${Date.now()}` };
-      this.episodes.update(list => [fallbackEp, ...list]);
-    }
+    this.podcastService.createEpisode(payload).subscribe({
+      next: (res) => {
+        this.episodes.update(list => [res, ...list]);
+      },
+      error: () => {
+        const fallbackEp: PodcastEpisode = { ...payload, id: `ep-${Date.now()}` };
+        this.episodes.update(list => [fallbackEp, ...list]);
+      }
+    });
 
     this.closeCreateEpisodeModal();
     this.activeTab.set('episodes');

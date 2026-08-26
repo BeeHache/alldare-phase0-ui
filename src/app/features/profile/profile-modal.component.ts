@@ -28,8 +28,8 @@ import { AuthService } from '../../core/services/auth.service';
         <!-- Modal Body Content -->
         <div class="space-y-4 pt-3 border-t border-slate-800 flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
           <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-1.5">Display / Author Name</label>
-            <input type="text" [(ngModel)]="editableProfile.displayName" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-purple-500 transition" />
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-1.5">Display / Author Name <span class="text-rose-400">*</span></label>
+            <input type="text" [(ngModel)]="editableProfile.displayName" [class.input-invalid]="isDisplayNameInvalid()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-purple-500 transition" />
           </div>
 
           <div>
@@ -92,7 +92,7 @@ import { AuthService } from '../../core/services/auth.service';
           <button (click)="close()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
             Cancel
           </button>
-          <button (click)="saveProfile()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 text-white text-xs font-black shadow-lg shadow-purple-500/25 transition">
+          <button (click)="saveProfile()" [disabled]="!isFormValid()" [class.btn-disabled]="!isFormValid()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 text-white text-xs font-black shadow-lg shadow-purple-500/25 transition">
             Save Profile Changes
           </button>
         </div>
@@ -116,6 +116,14 @@ export class ProfileModalComponent implements OnInit {
     email: '',
     provider: 'local'
   };
+
+  isDisplayNameInvalid(): boolean {
+    return !(this.editableProfile.displayName || '').trim();
+  }
+
+  isFormValid(): boolean {
+    return !this.isDisplayNameInvalid();
+  }
 
   socialTargets = signal<Array<{ key: string; name: string; colorClass: string; path: string; connected: boolean; handle?: string }>>([
     { key: 'TWITTER', name: 'Twitter / X', colorClass: 'bg-sky-500/15 text-sky-400 border-sky-500/30', path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z', connected: true, handle: '@BeeHache' },
@@ -149,6 +157,7 @@ export class ProfileModalComponent implements OnInit {
   }
 
   saveProfile(): void {
+    if (!this.isFormValid()) return;
     this.profileService.updateProfile(this.editableProfile).subscribe(updated => {
       this.profile.set(updated);
       alert('👤 User profile updated successfully!');

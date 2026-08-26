@@ -96,7 +96,7 @@ export class MediaService {
   }
 
   uploadMediaAsset(file: File, title?: string, extractAudio: boolean = false): Observable<MediaAsset> {
-    const authorId = this.authService.currentUser()?.id || '00000000-0000-0000-0000-000000000001';
+    const authorId = this.authService.currentUser()?.id || '';
     const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.bin';
     const contentType = file.type || 'application/octet-stream';
     const storageUrl = `/api/v1/storage/presigned-url?authorId=${authorId}&originalFilename=${encodeURIComponent(file.name)}&extension=${encodeURIComponent(extension)}&contentType=${encodeURIComponent(contentType)}&isPublic=true`;

@@ -8,9 +8,9 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule],
   template: `
     <header class="bg-slate-900/80 border-b border-slate-800 backdrop-blur-md sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 p-0.5 shadow-lg shadow-purple-500/20">
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 p-0.5 shadow-lg shadow-purple-500/20 flex-shrink-0">
             <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
               <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 016 0v6a3 3 0 01-3 3z"></path>
@@ -18,7 +18,12 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
           </div>
           <div>
-            <h1 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
+            <h1 class="text-lg font-black text-white tracking-tight flex items-center gap-1.5 flex-wrap">
+              <button *ngIf="parentLinkText" (click)="back.emit()" class="text-slate-400 hover:text-purple-300 transition font-medium text-sm flex items-center gap-1.5 group">
+                <span class="group-hover:-translate-x-0.5 transition-transform">←</span>
+                <span>{{ parentLinkText }}</span>
+                <span class="text-slate-600 font-mono font-normal">/</span>
+              </button>
               <span>{{ title }}</span>
               <span class="text-[10px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">{{ badgeText }}</span>
             </h1>
@@ -48,7 +53,11 @@ export class AppHeaderComponent {
   @Input() title: string = 'Alldare Platform';
   @Input() badgeText: string = 'Phase 0';
   @Input() subtitle: string = 'Decentralized Content Distribution & Podcast Syndication';
+  @Input() parentLinkText: string = '';
+  @Input() showBackButton: boolean = false;
+  @Input() backText: string = 'Back';
 
+  @Output() back = new EventEmitter<void>();
   @Output() openProfile = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
 

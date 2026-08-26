@@ -87,6 +87,28 @@ option {
   box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.55);
 }
 
+/* Consistent Disabled Action Button Styling Across All Modals */
+.btn-disabled,
+button:disabled:not([disabled="false"]) {
+  background-color: #1e293b !important;
+  background-image: none !important;
+  color: #64748b !important;
+  border-color: #334155 !important;
+  cursor: not-allowed !important;
+  opacity: 0.55 !important;
+  box-shadow: none !important;
+}
+
+/* Invalid / Empty Required Input Red Outline */
+.input-invalid {
+  border-color: #f43f5e !important;
+}
+
+.input-invalid:focus {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.35) !important;
+}
+
 .btn-thick {
   padding-top: 0.75rem !important;
   padding-bottom: 0.75rem !important;

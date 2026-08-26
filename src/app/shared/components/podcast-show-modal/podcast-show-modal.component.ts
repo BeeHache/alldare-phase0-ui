@@ -28,14 +28,14 @@ import { RssFeedBoxComponent } from '../rss-feed-box/rss-feed-box.component';
             <label class="form-label-prominent flex items-center justify-between">
               <span>Podcast Show Title <span class="text-rose-400">*</span></span>
             </label>
-            <input type="text" [(ngModel)]="showForm.title" (ngModelChange)="onTitleInput($event)" placeholder="Enter title (e.g. Deep Tech Talk)" class="form-input-prominent" />
+            <input type="text" [(ngModel)]="showForm.title" (ngModelChange)="onTitleInput($event)" [class.input-invalid]="isTitleInvalid()" placeholder="Enter title (e.g. Deep Tech Talk)" class="form-input-prominent" />
           </div>
 
           <div>
             <label class="form-label-prominent">
               {{ isEditMode ? 'URL Slug (Immutable)' : 'Unique URL Slug *' }}
             </label>
-            <input type="text" [(ngModel)]="showForm.slug" [disabled]="isEditMode" [class.cursor-not-allowed]="isEditMode" [class.select-none]="isEditMode" [class.bg-slate-950]="isEditMode" [class.border-slate-800]="isEditMode" [class.text-slate-500]="isEditMode" placeholder="e.g. deep-tech-talk" class="form-input-prominent font-mono text-purple-300" />
+            <input type="text" [(ngModel)]="showForm.slug" [disabled]="isEditMode" [class.cursor-not-allowed]="isEditMode" [class.select-none]="isEditMode" [class.bg-slate-950]="isEditMode" [class.border-slate-800]="isEditMode" [class.text-slate-500]="isEditMode" [class.input-invalid]="isSlugInvalid()" placeholder="e.g. deep-tech-talk" class="form-input-prominent font-mono text-purple-300" />
             
             <p *ngIf="isEditMode" class="text-[11px] text-amber-400/90 mt-1.5 flex items-center gap-1.5 font-medium">
               <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@ import { RssFeedBoxComponent } from '../rss-feed-box/rss-feed-box.component';
             <div>
               <label class="form-label-prominent">Category <span class="text-rose-400">*</span></label>
               <div class="relative">
-                <select [(ngModel)]="showForm.category" class="form-input-prominent appearance-none pr-10">
+                <select [(ngModel)]="showForm.category" [class.input-invalid]="isCategoryInvalid()" class="form-input-prominent appearance-none pr-10">
                   <option value="Technology">Technology</option>
                   <option value="Business">Business</option>
                   <option value="Education">Education</option>
@@ -77,7 +77,7 @@ import { RssFeedBoxComponent } from '../rss-feed-box/rss-feed-box.component';
             </div>
             <div>
               <label class="form-label-prominent">Author Name <span class="text-rose-400">*</span></label>
-              <input type="text" [(ngModel)]="showForm.authorName" placeholder="Author / Publisher Name" class="form-input-prominent" />
+              <input type="text" [(ngModel)]="showForm.authorName" [class.input-invalid]="isAuthorInvalid()" placeholder="Author / Publisher Name" class="form-input-prominent" />
             </div>
           </div>
 
@@ -112,7 +112,7 @@ import { RssFeedBoxComponent } from '../rss-feed-box/rss-feed-box.component';
           <button (click)="close.emit()" class="py-2.5 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs transition border border-slate-700">
             Cancel
           </button>
-          <button (click)="submitForm()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/20">
+          <button (click)="submitForm()" [disabled]="!isFormValid()" [class.btn-disabled]="!isFormValid()" class="btn-gradient-primary py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/20">
             <svg *ngIf="!isEditMode" class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -155,6 +155,26 @@ export class PodcastShowModalComponent implements OnChanges {
     }
   }
 
+  isTitleInvalid(): boolean {
+    return !(this.showForm.title || '').trim();
+  }
+
+  isSlugInvalid(): boolean {
+    return !(this.showForm.slug || '').trim();
+  }
+
+  isCategoryInvalid(): boolean {
+    return !(this.showForm.category || '').trim();
+  }
+
+  isAuthorInvalid(): boolean {
+    return !(this.showForm.authorName || '').trim();
+  }
+
+  isFormValid(): boolean {
+    return !this.isTitleInvalid() && !this.isSlugInvalid() && !this.isCategoryInvalid() && !this.isAuthorInvalid();
+  }
+
   onTitleInput(title: string): void {
     if (!this.isEditMode) {
       this.showForm.slug = (title || '')
@@ -170,17 +190,12 @@ export class PodcastShowModalComponent implements OnChanges {
   }
 
   submitForm(): void {
+    if (!this.isFormValid()) {
+      return;
+    }
     const title = (this.showForm.title || '').trim();
     const slug = (this.showForm.slug || '').trim();
 
-    if (!title) {
-      alert('Podcast Show Title is required.');
-      return;
-    }
-    if (!slug) {
-      alert('Unique URL Slug is required.');
-      return;
-    }
     this.save.emit({
       ...this.showForm,
       title: title,
