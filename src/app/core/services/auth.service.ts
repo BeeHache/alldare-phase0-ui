@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_AVATAR } from '../constants/app.constants';
+import { environment } from '../../../environments/environment';
 
 export interface CreatorUser {
   id: string;
@@ -31,7 +32,8 @@ export class AuthService {
   isAuthenticated = computed(() => !!this.tokenSignal());
 
   constructor() {
-    this.checkUrlForToken();
+    // Deferred microtask prevents circular dependency issues during HTTP interceptor initialization (AGENTS.md Rule)
+    queueMicrotask(() => this.checkUrlForToken());
   }
 
   get token(): string | null {
@@ -92,6 +94,10 @@ export class AuthService {
   }
 
   loginAsDevCreator(): void {
+    if (environment.production) {
+      console.warn('Dev Creator bypass login is disabled in production builds.');
+      return;
+    }
     const devUser: CreatorUser = {
       id: DEFAULT_CREATOR_ID,
       username: DEFAULT_USERNAME,

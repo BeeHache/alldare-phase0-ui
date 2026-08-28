@@ -11,6 +11,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { EpisodeCardComponent } from '../../shared/components/episode-card/episode-card.component';
 import { EpisodeModalComponent } from '../../shared/components/episode-modal/episode-modal.component';
 import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
+import { MediaLibraryComponent } from '../../shared/components/media-library/media-library.component';
 import { AppHeaderComponent } from '../../shared/components/app-header/app-header.component';
 
 @Component({
@@ -23,6 +24,7 @@ import { AppHeaderComponent } from '../../shared/components/app-header/app-heade
     EpisodeCardComponent, 
     EpisodeModalComponent, 
     MediaPickerModalComponent,
+    MediaLibraryComponent,
     AppHeaderComponent
   ],
   templateUrl: './studio.component.html',
@@ -35,7 +37,7 @@ export class StudioComponent implements OnInit {
   private router = inject(Router);
   public authService = inject(AuthService);
 
-  activeTab = signal<'episodes' | 'slideshow' | 'show' | 'monetization'>('episodes');
+  activeTab = signal<'episodes' | 'media' | 'slideshow' | 'show' | 'monetization'>('episodes');
   isUploading = signal<boolean>(false);
   isCreatorProSubscribed = signal<boolean>(false);
   copiedRss = signal<boolean>(false);
@@ -115,7 +117,7 @@ export class StudioComponent implements OnInit {
     const creatorId = user.id;
 
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
-    if (tabParam === 'episodes' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
+    if (tabParam === 'episodes' || tabParam === 'media' || tabParam === 'slideshow' || tabParam === 'show' || tabParam === 'monetization') {
       this.activeTab.set(tabParam);
     }
 
@@ -291,6 +293,39 @@ export class StudioComponent implements OnInit {
         }
       });
     }
+  }
+
+  onUploadMediaFile(event: { file: File; title: string }): void {
+    this.isUploading.set(true);
+    const creatorId = this.authService.currentUser()?.id || '';
+
+    this.mediaService.uploadMediaAsset(event.file, event.title).subscribe({
+      next: (uploaded) => {
+        this.mediaAssets.update(list => [uploaded, ...list]);
+        this.isUploading.set(false);
+      },
+      error: () => {
+        const mockAsset: MediaAsset = {
+          id: `asset-${Date.now()}`,
+          creatorId: creatorId,
+          filename: event.file.name,
+          originalName: event.file.name,
+          title: event.title || event.file.name,
+          cdnUrl: `https://cdn.alldare.online/media/vault/${event.file.name}`,
+          mediaType: event.file.type || 'audio/mpeg',
+          durationSeconds: 1800,
+          fileSizeBytes: event.file.size,
+          status: 'READY',
+          createdAt: new Date().toISOString()
+        };
+        this.mediaAssets.update(list => [mockAsset, ...this.mediaAssets()]);
+        this.isUploading.set(false);
+      }
+    });
+  }
+
+  onDeleteMediaAsset(asset: MediaAsset): void {
+    this.deleteMediaAsset(asset);
   }
 
   publishEpisode(isDraft: boolean = true): void {

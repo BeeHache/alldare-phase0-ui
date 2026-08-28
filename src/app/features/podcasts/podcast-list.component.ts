@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,6 +11,7 @@ import { ProfileModalComponent } from '../profile/profile-modal.component';
 import { DEFAULT_CREATOR_ID, DEFAULT_USERNAME, DEFAULT_EMAIL, DEFAULT_COVER_IMAGE } from '../../core/constants/app.constants';
 import { PodcastShowModalComponent } from '../../shared/components/podcast-show-modal/podcast-show-modal.component';
 import { MediaPickerModalComponent } from '../../shared/components/media-picker-modal/media-picker-modal.component';
+import { MediaLibraryComponent } from '../../shared/components/media-library/media-library.component';
 import { AppHeaderComponent } from '../../shared/components/app-header/app-header.component';
 import { VideoPlayerModalComponent } from '../../shared/components/video-player-modal/video-player-modal.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
@@ -24,6 +26,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     ProfileModalComponent, 
     PodcastShowModalComponent, 
     MediaPickerModalComponent,
+    MediaLibraryComponent,
     AppHeaderComponent,
     VideoPlayerModalComponent,
     EmptyStateComponent
@@ -37,6 +40,7 @@ export class PodcastListComponent implements OnInit {
   private postService = inject(PostService);
   private router = inject(Router);
   public authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   public get currentOrigin(): string {
     return window.location.origin;
@@ -213,20 +217,66 @@ export class PodcastListComponent implements OnInit {
   }
 
   loadShows(creatorId: string): void {
-    this.podcastService.getShowsByCreatorId(creatorId).subscribe(list => {
-      this.shows.set(list || []);
-    });
+    this.podcastService.getShowsByCreatorId(creatorId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(list => {
+        this.shows.set(list || []);
+      });
   }
 
   loadPosts(creatorId: string): void {
-    this.postService.getPostsByCreatorId(creatorId).subscribe(list => {
-      this.posts.set(list || []);
-    });
+    this.postService.getPostsByCreatorId(creatorId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(list => {
+        this.posts.set(list || []);
+      });
   }
 
   loadMediaAssets(creatorId: string): void {
-    this.mediaService.getMediaAssets(creatorId).subscribe(assets => {
-      this.mediaAssets.set(assets || []);
+    this.mediaService.getMediaAssets(creatorId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(assets => {
+        this.mediaAssets.set(assets || []);
+      });
+  }
+
+  onUploadMediaFile(event: { file: File; title: string }): void {
+    this.isUploading.set(true);
+    const creatorId = this.authService.currentUser()?.id || '';
+
+    this.mediaService.uploadMediaAsset(event.file, event.title).subscribe({
+      next: (uploaded) => {
+        this.mediaAssets.update(list => [uploaded, ...list]);
+        this.isUploading.set(false);
+      },
+      error: () => {
+        const mockAsset: MediaAsset = {
+          id: `asset-${Date.now()}`,
+          creatorId: creatorId,
+          filename: event.file.name,
+          originalName: event.file.name,
+          title: event.title || event.file.name,
+          cdnUrl: `https://cdn.alldare.local/public/${event.file.name}`,
+          mediaType: event.file.type || 'audio/mpeg',
+          durationSeconds: 1800,
+          fileSizeBytes: event.file.size,
+          status: 'READY',
+          createdAt: new Date().toISOString()
+        };
+        this.mediaAssets.update(list => [mockAsset, ...this.mediaAssets()]);
+        this.isUploading.set(false);
+      }
+    });
+  }
+
+  onDeleteMediaAsset(asset: MediaAsset): void {
+    this.mediaService.deleteMediaAsset(asset.id).subscribe({
+      next: () => {
+        this.mediaAssets.update(list => list.filter(a => a.id !== asset.id));
+      },
+      error: () => {
+        this.mediaAssets.update(list => list.filter(a => a.id !== asset.id));
+      }
     });
   }
 

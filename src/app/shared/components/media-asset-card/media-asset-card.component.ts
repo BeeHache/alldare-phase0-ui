@@ -7,9 +7,9 @@ import { MediaAsset } from '../../../core/services/media.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div (click)="select.emit(asset)" 
-         [class]="isSelected ? 'bg-purple-950/60 border-purple-500 shadow-lg shadow-purple-500/20 ring-1 ring-purple-500/40' : 'bg-slate-950/90 border-slate-800 hover:border-purple-500/40 hover:bg-slate-900/60'" 
-         class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3 min-w-0 overflow-hidden group">
+    <div (click)="asset.status === 'READY' && select.emit(asset)" 
+         [class]="asset.status !== 'READY' ? 'opacity-60 cursor-not-allowed bg-slate-950/50 border-slate-800/80' : (isSelected ? 'bg-purple-950/60 border-purple-500 shadow-lg shadow-purple-500/20 ring-1 ring-purple-500/40 cursor-pointer' : 'bg-slate-950/90 border-slate-800 hover:border-purple-500/40 hover:bg-slate-900/60 cursor-pointer')" 
+         class="p-3.5 rounded-2xl border transition-all duration-200 flex items-start gap-3 min-w-0 overflow-hidden group">
       
       <div class="mt-0.5 p-2 rounded-xl bg-slate-900 border border-slate-800 group-hover:border-purple-500/30 flex-shrink-0 text-purple-400">
         <svg *ngIf="asset.mediaType.startsWith('video')" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,7 +25,14 @@ import { MediaAsset } from '../../../core/services/media.service';
           <h4 class="text-xs font-bold text-white truncate min-w-0" [title]="asset.title || asset.originalName">
             {{ asset.title || asset.originalName }}
           </h4>
-          <span [class]="isSelected ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 border border-slate-700'" class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md flex-shrink-0 whitespace-nowrap transition">
+          <span *ngIf="asset.status === 'PROCESSING'" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md flex-shrink-0 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>PROCESSING</span>
+          </span>
+          <span *ngIf="asset.status === 'FAILED'" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md flex-shrink-0">
+            FAILED
+          </span>
+          <span *ngIf="asset.status === 'READY'" [class]="isSelected ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 border border-slate-700'" class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md flex-shrink-0 whitespace-nowrap transition">
             {{ isSelected ? '✓ SELECTED' : 'SELECT' }}
           </span>
         </div>

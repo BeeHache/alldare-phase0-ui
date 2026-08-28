@@ -74,6 +74,7 @@ export class MediaService {
 
         const rawDownload = item.downloadUrl || `http://cdn.alldare.local/${item.s3Key}`;
         const cdnUrl = this.formatCdnUrl(rawDownload);
+        const itemStatus = item.processingStatus ? (item.processingStatus.toUpperCase() as 'PROCESSING' | 'READY' | 'FAILED') : 'READY';
 
         return {
           id: item.id,
@@ -83,9 +84,9 @@ export class MediaService {
           title: cleanName,
           cdnUrl: cdnUrl,
           mediaType: item.contentType || 'application/octet-stream',
-          durationSeconds: 180,
-          fileSizeBytes: 0,
-          status: 'READY' as const,
+          durationSeconds: item.durationSeconds != null ? item.durationSeconds : 0,
+          fileSizeBytes: item.fileSizeBytes != null ? item.fileSizeBytes : 0,
+          status: itemStatus,
           createdAt: item.createdAt || new Date().toISOString()
         };
       })),
@@ -95,10 +96,30 @@ export class MediaService {
     );
   }
 
+  private readonly SUPPORTED_MIME_TYPES = [
+    'audio/mpeg', 'audio/wav', 'audio/aac', 'audio/flac', 'audio/ogg', 'audio/x-m4a',
+    'video/mp4', 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'application/rss+xml', 'application/atom+xml', 'application/x-mpegurl',
+    'application/octet-stream', 'application/json', 'application/pdf'
+  ];
+
+  isSupportedContentType(mimeType: string): boolean {
+    if (!mimeType) return true;
+    const lower = mimeType.toLowerCase().trim();
+    return this.SUPPORTED_MIME_TYPES.includes(lower);
+  }
+
   uploadMediaAsset(file: File, title?: string, extractAudio: boolean = false): Observable<MediaAsset> {
     const authorId = this.authService.currentUser()?.id || '';
     const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.bin';
     const contentType = file.type || 'application/octet-stream';
+
+    if (!this.isSupportedContentType(contentType)) {
+      return new Observable<MediaAsset>(subscriber => {
+        subscriber.error(new Error(`File format '${contentType}' is not supported. Please upload a supported audio (MP3, WAV, AAC, FLAC) or video (MP4) file.`));
+      });
+    }
+
     const storageUrl = `/api/v1/storage/presigned-url?authorId=${authorId}&originalFilename=${encodeURIComponent(file.name)}&extension=${encodeURIComponent(extension)}&contentType=${encodeURIComponent(contentType)}&isPublic=true`;
 
     return this.http.get<{ uploadUrl?: string, url?: string, fileName: string }>(storageUrl).pipe(
@@ -137,6 +158,10 @@ export class MediaService {
       }),
       catchError(err => {
         console.error('Presigned S3 upload failed:', err);
+        const serverMsg = err?.error?.message || err?.error?.error || err?.message;
+        if (err.status === 400 || err.status === 415 || (err?.error?.error === 'UNSUPPORTED_MEDIA_TYPE')) {
+          throw new Error(serverMsg || `Unsupported file format '${contentType}'`);
+        }
         const timestamp = Date.now();
         const fallbackKey = `public/vault/${timestamp}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
         return of({
