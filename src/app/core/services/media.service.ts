@@ -129,16 +129,16 @@ export class MediaService {
           throw new Error('Invalid presigned URL response from storage service');
         }
 
-        // Match current protocol (https/http) to prevent Mixed Content errors
-        targetUrl = this.formatCdnUrl(targetUrl);
+        // Preserve exact presigned URL for S3 SigV4 signature verification
+        const uploadUrl = targetUrl;
 
-        return this.http.put(targetUrl, file, {
+        return this.http.put(uploadUrl, file, {
           headers: { 'Content-Type': contentType },
           responseType: 'text'
         }).pipe(
           map(() => {
             const timestamp = Date.now();
-            const rawCdn = targetUrl.split('?')[0];
+            const rawCdn = uploadUrl.split('?')[0];
             const cdnUrl = this.formatCdnUrl(rawCdn);
             return {
               id: `asset-${timestamp}`,

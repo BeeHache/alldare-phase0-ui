@@ -1,21 +1,16 @@
 import { Routes } from '@angular/router';
-import { StudioComponent } from './features/studio/studio.component';
-import { LoginComponent } from './features/auth/login.component';
-import { AuthCallbackComponent } from './features/auth/auth-callback.component';
-import { PodcastListComponent } from './features/podcasts/podcast-list.component';
-import { PodcastPublicComponent } from './features/podcast-public/podcast-public.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'auth/callback', component: AuthCallbackComponent },
-  { path: 'podcasts', component: PodcastListComponent, canActivate: [authGuard] },
-  { path: 'studio/:slug', component: StudioComponent, canActivate: [authGuard] },
-  { path: 'studio', component: StudioComponent, canActivate: [authGuard] },
-  { path: 'podcast/:slug/index.html', component: PodcastPublicComponent },
-  { path: 'podcast/:slug', component: PodcastPublicComponent },
-  { path: ':slug/index.html', component: PodcastPublicComponent },
-  { path: ':slug', component: PodcastPublicComponent },
+  { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
+  { path: 'auth/callback', loadComponent: () => import('./features/auth/auth-callback.component').then(m => m.AuthCallbackComponent) },
+  { path: 'podcasts', loadComponent: () => import('./features/podcasts/podcast-list.component').then(m => m.PodcastListComponent), canActivate: [authGuard] },
+  { path: 'studio/:slug', loadComponent: () => import('./features/studio/studio.component').then(m => m.StudioComponent), canActivate: [authGuard] },
+  { path: 'studio', loadComponent: () => import('./features/studio/studio.component').then(m => m.StudioComponent), canActivate: [authGuard] },
+  { path: 'podcast/:slug/index.html', loadComponent: () => import('./features/podcast-public/podcast-public.component').then(m => m.PodcastPublicComponent) },
+  { path: 'podcast/:slug', loadComponent: () => import('./features/podcast-public/podcast-public.component').then(m => m.PodcastPublicComponent) },
+  { path: ':slug/index.html', loadComponent: () => import('./features/podcast-public/podcast-public.component').then(m => m.PodcastPublicComponent) },
+  { path: ':slug', loadComponent: () => import('./features/podcast-public/podcast-public.component').then(m => m.PodcastPublicComponent) },
   { path: '', redirectTo: 'podcasts', pathMatch: 'full' },
   { path: '**', redirectTo: 'podcasts' }
 ];

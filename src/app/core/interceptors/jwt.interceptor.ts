@@ -5,6 +5,8 @@ import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 function isTokenExpired(token: string): boolean {
+  if (!token) return true;
+  if (token.startsWith('dev-')) return false;
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;

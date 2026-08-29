@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +34,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   templateUrl: './podcast-list.component.html',
   styleUrls: ['./podcast-list.component.scss']
 })
-export class PodcastListComponent implements OnInit {
+export class PodcastListComponent implements OnInit, OnDestroy {
   public podcastService = inject(PodcastService);
   private mediaService = inject(MediaService);
   private postService = inject(PostService);
@@ -67,6 +67,13 @@ export class PodcastListComponent implements OnInit {
   playingAudioAssetId = signal<string | null>(null);
   activeVideoPlayerAsset = signal<MediaAsset | null>(null);
   private currentAudioElement: HTMLAudioElement | null = null;
+
+  ngOnDestroy(): void {
+    if (this.currentAudioElement) {
+      this.currentAudioElement.pause();
+      this.currentAudioElement = null;
+    }
+  }
 
   openVideoPlayer(asset: MediaAsset): void {
     if (asset.mediaType.startsWith('video') && asset.cdnUrl) {
@@ -114,21 +121,21 @@ export class PodcastListComponent implements OnInit {
     };
   }
 
-  filteredShows(): PodcastShow[] {
+  filteredShows = computed(() => {
     const query = (this.podcastSearchQuery() || '').toLowerCase().trim();
     return this.shows().filter(s =>
       !query || (s.title && s.title.toLowerCase().includes(query)) || (s.description && s.description.toLowerCase().includes(query)) || (s.category && s.category.toLowerCase().includes(query))
     );
-  }
+  });
 
-  filteredPosts(): SocialPost[] {
+  filteredPosts = computed(() => {
     const query = (this.postSearchQuery() || '').toLowerCase().trim();
     return this.posts().filter(p =>
       !query || (p.content && p.content.toLowerCase().includes(query)) || (p.username && p.username.toLowerCase().includes(query))
     );
-  }
+  });
 
-  filteredMediaAssets(): MediaAsset[] {
+  filteredMediaAssets = computed(() => {
     const query = (this.mediaSearchQuery() || '').toLowerCase().trim();
     const filter = this.mediaTypeFilter();
 
@@ -143,7 +150,7 @@ export class PodcastListComponent implements OnInit {
 
       return matchesQuery && matchesType;
     });
-  }
+  });
 
   editingShow = signal<PodcastShow | null>(null);
   editShowModel: PodcastShow = {
